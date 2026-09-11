@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public website data is readable by visitors.
+    // All writes require the Firebase Authentication user to be the configured admin UID.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.uid == 'REPLACE_WITH_VALUE_TOGETHER_ADMIN_UID';
+    }
+
+    // Public website content (settings, programs, notices, gallery,
+    // popups...). Publicly readable so the homepage can load for visitors
+    // without logging in. Donor/inquiry/subscriber personal data must
+    // NEVER be stored inside this document — use the dedicated
+    // collections below instead, which are not publicly readable.
+    match /foundation/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Donation applications: contain name/phone/email/message. The public
+    // may only submit a new application (create); they can never read,
+    // edit, or delete existing ones — only the admin can. The create rule
+    // also does a light shape check so a malformed/malicious payload can't
+    // slip in a pre-set "처리완료" status or missing required fields.
+    match /donations/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'donationType', 'targetCategory', 'amountOrItem', 'message', 'privacyAgreed', 'createdAt', 'status'])
+        && request.resource.data.keys().hasAll(['name', 'phone', 'createdAt', 'status'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 200
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() > 0 && request.resource.data.phone.size() < 50
+        && request.resource.data.email is string
+        && request.resource.data.email.size() < 200
+        && request.resource.data.donationType is string
+        && request.resource.data.donationType.size() > 0 && request.resource.data.donationType.size() < 50
+        && request.resource.data.targetCategory is string
+        && request.resource.data.targetCategory.size() > 0 && request.resource.data.targetCategory.size() < 100
+        && (!request.resource.data.keys().hasAny(['amountOrItem']) || request.resource.data.amountOrItem is string)
+        && (!request.resource.data.keys().hasAny(['message']) || request.resource.data.message is string)
+        && request.resource.data.privacyAgreed == true
+        && request.resource.data.createdAt is string
+        && request.resource.data.status == '접수완료';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Contact inquiries: contain name/phone/email/message. Same pattern.
+    match /inquiries/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'subject', 'message', 'createdAt', 'status'])
+        && request.resource.data.keys().hasAll(['name', 'phone', 'message', 'createdAt', 'status'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 200
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() > 0 && request.resource.data.phone.size() < 50
+        && request.resource.data.message is string
+        && request.resource.data.email is string
+        && request.resource.data.email.size() < 200
+        && request.resource.data.subject is string
+        && request.resource.data.subject.size() > 0 && request.resource.data.subject.size() < 300
+        && request.resource.data.message.size() > 0 && request.resource.data.message.size() < 5000
+        && request.resource.data.createdAt is string
+        && request.resource.data.status == '대기중';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Newsletter subscribers: contain email only, but still not meant for
+    // public listing/scraping. Same create-only-for-public pattern.
+    match /subscribers/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'subscribedAt', 'status'])
+        && request.resource.data.keys().hasAll(['email', 'subscribedAt', 'status'])
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 0 && request.resource.data.email.size() < 200
+        && request.resource.data.subscribedAt is string
+        && request.resource.data.status == '구독중';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Client-side error reports (2026-08 monitoring addition). Anyone's
+    // browser may report an error it hit (including anonymous visitors —
+    // that's the whole point of catching real-world failures), but only
+    // the admin can read or clear them. Deliberately small/flat shape so
+    // a malicious payload can't smuggle in something large or unrelated.
+    match /errorLogs/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['message', 'stack', 'url', 'userAgent', 'context', 'createdAt'])
+        && request.resource.data.keys().hasAll(['message', 'url', 'createdAt'])
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0 && request.resource.data.message.size() < 2000
+        && (!request.resource.data.keys().hasAny(['stack']) || (request.resource.data.stack is string && request.resource.data.stack.size() < 4000))
+        && request.resource.data.url is string
+        && request.resource.data.url.size() < 500
+        && (!request.resource.data.keys().hasAny(['userAgent']) || (request.resource.data.userAgent is string && request.resource.data.userAgent.size() < 500))
+        && (!request.resource.data.keys().hasAny(['context']) || (request.resource.data.context is string && request.resource.data.context.size() < 200))
+        && request.resource.data.createdAt is string;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // Admin action history (2026-08 monitoring addition). Only the admin
+    // performs the actions this records, so only the admin may write —
+    // there is no public-facing reason for anyone else to create one of
+    // these — and entries are never edited after the fact, only read or
+    // (in bulk, by the admin) cleared, so the trail stays trustworthy.
+    match /auditLogs/{id} {
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['action', 'summary', 'adminEmail', 'createdAt'])
+        && request.resource.data.keys().hasAll(['action', 'summary', 'createdAt'])
+        && request.resource.data.action is string
+        && request.resource.data.action.size() > 0 && request.resource.data.action.size() < 100
+        && request.resource.data.summary is string
+        && request.resource.data.summary.size() > 0 && request.resource.data.summary.size() < 500
+        && (!request.resource.data.keys().hasAny(['adminEmail']) || (request.resource.data.adminEmail is string && request.resource.data.adminEmail.size() < 200))
+        && request.resource.data.createdAt is string;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // Test collection is disabled in production.
+    match /test/{docId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
