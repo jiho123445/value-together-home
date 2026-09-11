@@ -116,9 +116,9 @@ export const SettingsTab: React.FC = () => {
       </SectionCard>
 
       <SectionCard title="후원계좌" description="후원·기부 안내에 사용할 조합 명의 계좌 정보입니다." saved={savedSection === 'bank'} onSave={saveBank}>
-        <ListEditor
+        <ListEditor<BankAccount>
           items={form.bankAccounts || []}
-          onChange={(items) => set('bankAccounts', items as BankAccount[])}
+          onChange={(items) => set('bankAccounts', items)}
           newItem={(): BankAccount => ({ bank: '', accountNumber: '', holder: '' })}
           renderRow={(item, update) => (
             <div className="grid sm:grid-cols-3 gap-2 flex-1">
@@ -146,9 +146,9 @@ export const SettingsTab: React.FC = () => {
       </SectionCard>
 
       <SectionCard title="운영원칙" saved={savedSection === 'principles'} onSave={savePrinciples}>
-        <ListEditor
+        <ListEditor<OperatingPrinciple>
           items={form.operatingPrinciples}
-          onChange={(items) => set('operatingPrinciples', items as OperatingPrinciple[])}
+          onChange={(items) => set('operatingPrinciples', items)}
           newItem={(): OperatingPrinciple => ({ id: `op-${Date.now()}`, title: '', description: '' })}
           renderRow={(item, update) => (
             <div className="grid sm:grid-cols-[1fr_2fr] gap-2 flex-1">
@@ -161,9 +161,9 @@ export const SettingsTab: React.FC = () => {
       </SectionCard>
 
       <SectionCard title="조직도" saved={savedSection === 'org'} onSave={saveOrgChart}>
-        <ListEditor
+        <ListEditor<OrgChartItem>
           items={form.orgChart}
-          onChange={(items) => set('orgChart', items as OrgChartItem[])}
+          onChange={(items) => set('orgChart', items)}
           newItem={(): OrgChartItem => ({ id: `org-${Date.now()}`, department: '', role: '', description: '', order: form.orgChart.length + 1 })}
           renderRow={(item, update) => (
             <div className="grid sm:grid-cols-[1fr_1fr_2fr] gap-2 flex-1">
