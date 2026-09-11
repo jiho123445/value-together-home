@@ -8,16 +8,15 @@ export const GalleryPreviewSection: React.FC = () => {
   if (list.length === 0) return null;
 
   return (
-    <section className="py-20 sm:py-24 bg-paper">
+    <section className="py-14 sm:py-20 bg-paper">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div className="space-y-2">
-            <p className="text-sm sm:text-base font-extrabold text-primary-ink tracking-wide">GALLERY</p>
-            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-[3rem] text-ink">활동갤러리</h2>
-            <p className="text-base sm:text-lg text-ink-soft">함께 만들어온 순간과 지역사회 현장의 모습을 기록합니다.</p>
+            <p className="text-sm font-bold text-primary-ink tracking-wide">GALLERY</p>
+            <h2 className="font-display font-black text-3xl sm:text-4xl text-ink">활동갤러리</h2>
           </div>
-          <button type="button" onClick={() => setActiveTab('gallery')} className="inline-flex items-center gap-1.5 text-base font-extrabold text-ink-soft hover:text-ink">
-            전체보기 <ArrowRight className="w-4 h-4" />
+          <button type="button" onClick={() => setActiveTab('gallery')} className="inline-flex items-center gap-1.5 text-base font-bold text-ink-soft hover:text-ink">
+            전체보기 <ArrowRight className="w-5 h-5" />
           </button>
         </div>
 
@@ -43,8 +42,8 @@ export const GalleryPreviewSection: React.FC = () => {
                 )}
               </div>
               <div className="p-3 space-y-0.5">
-                <p className="text-sm font-bold text-secondary-ink">{item.category}</p>
-                <p className="text-base font-bold text-ink truncate">{item.title}</p>
+                <p className="text-xs font-bold text-secondary-ink">{item.category}</p>
+                <p className="text-sm font-bold text-ink truncate">{item.title}</p>
               </div>
             </button>
           ))}

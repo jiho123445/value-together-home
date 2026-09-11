@@ -9,8 +9,8 @@ interface LogoProps {
 }
 
 const SIZE_MAP: Record<NonNullable<LogoProps['size']>, { mark: string; word: string }> = {
-  header: { mark: 'h-11 w-11 sm:h-12 sm:w-12', word: 'text-xl sm:text-2xl' },
-  hero: { mark: 'h-14 w-14 sm:h-16 sm:w-16', word: 'text-2xl sm:text-3xl' },
+  header: { mark: 'h-12 w-12 sm:h-14 sm:w-14', word: 'text-xl sm:text-2xl' },
+  hero: { mark: 'h-16 w-16 sm:h-20 sm:w-20', word: 'text-3xl sm:text-4xl' },
   footer: { mark: 'h-8 w-8', word: 'text-base' },
 };
 
@@ -29,7 +29,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'header', withWordmark = true
       <img src="/logo-mark.png" alt="" aria-hidden="true" className={`${s.mark} object-contain shrink-0`} />
       {withWordmark && (
         <span className="flex flex-col leading-tight">
-          <span className="text-[10px] sm:text-[11px] font-bold tracking-wide text-secondary-ink">
+          <span className="text-[11px] sm:text-xs font-bold tracking-wide text-secondary-ink">
             사회적협동조합
           </span>
           <span className={`font-display font-black text-ink ${s.word}`}>가치함께</span>
