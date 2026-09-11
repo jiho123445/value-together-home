@@ -1,6 +1,6 @@
-// firestoreService.ts intentionally has no Firestore SDK imports of its
-// own now — handleFirestoreError() below is pure logging, and
-// GLOBAL_FOUNDATION_DOC is just a path constant.
+// firestoreService.ts intentionally has no Firestore SDK imports of its own
+// — handleFirestoreError() below is pure logging, kept separate so it can
+// be called from anywhere without pulling in Firestore types.
 
 export enum OperationType {
   CREATE = 'create',
@@ -21,19 +21,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     operationType,
-    path
+    path,
   };
   console.warn('Firestore Operation Notice:', JSON.stringify(errInfo));
 }
 
-export const GLOBAL_FOUNDATION_DOC = 'foundation/global';
-
-// BUG FIX (2026-08-24): removed testFirestoreConnection(), which used to
-// run on every page load and read `test/connection` — a path
-// firestore.rules explicitly denies to everyone (`allow read, write: if
-// false;`), on purpose. That made it a guaranteed-to-fail request on
-// every single visit: no functional impact (the failure was silently
-// swallowed), but a wasted round-trip and a steady stream of
-// permission-denied entries in Firebase's usage logs. The onSnapshot
-// listener in FoundationContext.tsx already reports connectivity for
-// real; this separate probe added nothing.
+// Top-level collection name for the (split-by-document) public site content
+// — settings/timeline/programs/notices/gallery/popups/partners each live as
+// their own document under this collection. Kept as a named constant so
+// every call site agrees on the name; ValueTogetherContext.tsx, firestore.rules
+// and storage.rules all use this same literal ('content').
+export const CONTENT_COLLECTION = 'content';

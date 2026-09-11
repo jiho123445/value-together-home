@@ -1,41 +1,86 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>사회적협동조합 가치함께</title>
-    <meta name="description" content="사람과 가치, 지역이 함께하는 사회적협동조합 가치함께 공식 홈페이지" />
-    <meta name="keywords" content="사회적협동조합 가치함께, 가치함께, 사회서비스, 지역사회, 협동조합" />
+    <meta
+      name="description"
+      content="사회적협동조합 가치함께는 사람과 지역사회를 연결하고, 함께 성장할 수 있는 사회적 가치를 만들어갑니다."
+    />
     <meta name="author" content="사회적협동조합 가치함께" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <meta name="theme-color" content="#0b2922" />
-    <link rel="canonical" href="https://value-together.vercel.app/" />
-    <link rel="alternate" hreflang="ko-KR" href="https://value-together.vercel.app/" />
+    <meta name="theme-color" content="#B9832A" />
+    <meta property="og:site_name" content="사회적협동조합 가치함께" />
+    <meta property="og:locale" content="ko_KR" />
+
+    <!--
+      SEO 참고: canonical/OG URL과 아래 JSON-LD의 도메인은 아직 실제
+      도메인이 없어 placeholder(https://your-domain.example)로 두었습니다.
+      Phase 9(SEO)에서 실제 도메인이 정해지면 이 파일과
+      scripts/generate-previews.mjs의 SITE_ORIGIN을 함께 업데이트하세요.
+    -->
+    <link rel="canonical" href="https://your-domain.example/" />
+
+    <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta property="og:site_name" content="사회적협동조합 가치함께" />
-    <meta property="og:locale" content="ko_KR" />
-    <meta property="og:type" content="website" />
+
+    <!-- Open Graph -->
     <meta property="og:title" content="사회적협동조합 가치함께" />
-    <meta property="og:description" content="사람과 가치, 지역이 함께하는 사회적협동조합 가치함께 공식 홈페이지" />
-    <meta property="og:url" content="https://value-together.vercel.app/" />
-    <meta property="og:image" content="https://value-together.vercel.app/og-image.png" />
+    <meta
+      property="og:description"
+      content="사람과 지역사회를 연결하고, 함께 성장할 수 있는 사회적 가치를 만들어가는 사회적협동조합입니다."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://your-domain.example/" />
+    <meta property="og:image" content="https://your-domain.example/og-image.png" />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="사회적협동조합 가치함께" />
-    <meta name="twitter:description" content="사람과 가치, 지역이 함께하는 사회적협동조합 가치함께 공식 홈페이지" />
-    <meta name="twitter:image" content="https://value-together.vercel.app/og-image.png" />
+    <meta
+      name="twitter:description"
+      content="사람과 지역사회를 연결하고, 함께 성장할 수 있는 사회적 가치를 만들어가는 사회적협동조합입니다."
+    />
+    <meta name="twitter:image" content="https://your-domain.example/og-image.png" />
+
+    <!-- 구조화 데이터: 실제 주소/설립연도 등은 관리자 설정 입력 후
+         Phase 9에서 채워집니다. 지금은 허위 정보를 넣지 않기 위해
+         비워둡니다. -->
     <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"NGO","name":"사회적협동조합 가치함께","alternateName":"가치함께","url":"https://value-together.vercel.app/","logo":"https://value-together.vercel.app/og-image.png","description":"사람과 가치, 지역이 함께하는 사회적협동조합 가치함께 공식 홈페이지","inLanguage":"ko-KR"}
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "사회적협동조합 가치함께",
+      "alternateName": "가치함께",
+      "url": "https://your-domain.example/"
+    }
     </script>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <!-- Web Fonts: Gothic A1(제목) + Noto Sans KR(본문) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
+    />
+
+    <style>
+      body {
+        font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      }
+      .font-display {
+        font-family: 'Gothic A1', 'Noto Sans KR', sans-serif;
+      }
+    </style>
   </head>
-  <body>
+
+  <body class="bg-[#FBF9F5] text-[#2B2621] antialiased selection:bg-[#B9832A] selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

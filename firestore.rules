@@ -1,85 +1,69 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public website data is readable by visitors.
-    // All writes require the Firebase Authentication user to be the configured admin UID.
+
+    // ⚠️ 배포 전 필수 작업: 아래 UID를 가치함께 전용 Firebase 프로젝트에서
+    // 새로 만든 관리자 계정의 실제 UID로 교체하세요 (Firebase Console >
+    // Authentication에서 계정 생성 후 확인). 이 값은 기존 재단 프로젝트의
+    // 값을 절대 재사용하면 안 됩니다. Rules는 환경변수를 읽을 수 없어
+    // 이 상수 자체가 서버 측 보안 경계입니다 (클라이언트 번들에는 노출되지
+        // 않습니다 — 이 파일은 Firebase에만 배포됩니다).
     function isAdmin() {
       return request.auth != null
-        && request.auth.uid == 'REPLACE_WITH_VALUE_TOGETHER_ADMIN_UID';
+        && request.auth.uid == 'REPLACE_WITH_NEW_ADMIN_UID';
     }
 
-    // Public website content (settings, programs, notices, gallery,
-    // popups...). Publicly readable so the homepage can load for visitors
-    // without logging in. Donor/inquiry/subscriber personal data must
-    // NEVER be stored inside this document — use the dedicated
-    // collections below instead, which are not publicly readable.
-    match /foundation/{docId} {
+    // 공개 콘텐츠(기관 소개, 사업, 소식, 갤러리, 팝업, 협력기관). 방문자가
+    // 로그인 없이 홈페이지를 볼 수 있도록 읽기는 전체 공개, 쓰기는 관리자만.
+    // 개인정보는 이 문서군에 절대 저장하지 않습니다 — 아래 별도 컬렉션 참고.
+    match /content/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Donation applications: contain name/phone/email/message. The public
-    // may only submit a new application (create); they can never read,
-    // edit, or delete existing ones — only the admin can. The create rule
-    // also does a light shape check so a malformed/malicious payload can't
-    // slip in a pre-set "처리완료" status or missing required fields.
-    match /donations/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'donationType', 'targetCategory', 'amountOrItem', 'message', 'privacyAgreed', 'createdAt', 'status'])
-        && request.resource.data.keys().hasAll(['name', 'phone', 'createdAt', 'status'])
+    // 협력 및 참여 신청(조합원가입/자원봉사/후원협력/기관협력). 이름/연락처를
+    // 포함하므로 방문자는 새 신청서 생성만 가능하고, 읽기/수정/삭제는 관리자만
+    // 가능합니다. 생성 시 필드 구성을 서버 측에서 검증해 위조된 상태값이나
+    // 예상 밖의 필드가 들어오는 것을 막습니다.
+    match /participations/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['type', 'name', 'phone', 'email', 'organization', 'message', 'privacyAgreed', 'createdAt', 'status'])
+        && request.resource.data.keys().hasAll(['type', 'name', 'phone', 'createdAt', 'status'])
+        && request.resource.data.type in ['조합원가입', '자원봉사', '후원협력', '기관협력']
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 200
         && request.resource.data.phone is string
         && request.resource.data.phone.size() > 0 && request.resource.data.phone.size() < 50
-        && request.resource.data.email is string
-        && request.resource.data.email.size() < 200
-        && request.resource.data.donationType is string
-        && request.resource.data.donationType.size() > 0 && request.resource.data.donationType.size() < 50
-        && request.resource.data.targetCategory is string
-        && request.resource.data.targetCategory.size() > 0 && request.resource.data.targetCategory.size() < 100
-        && (!request.resource.data.keys().hasAny(['amountOrItem']) || request.resource.data.amountOrItem is string)
-        && (!request.resource.data.keys().hasAny(['message']) || request.resource.data.message is string)
+        && (!request.resource.data.keys().hasAny(['email']) || (request.resource.data.email is string && request.resource.data.email.size() < 200))
+        && (!request.resource.data.keys().hasAny(['organization']) || (request.resource.data.organization is string && request.resource.data.organization.size() < 200))
+        && (!request.resource.data.keys().hasAny(['message']) || (request.resource.data.message is string && request.resource.data.message.size() < 3000))
         && request.resource.data.privacyAgreed == true
         && request.resource.data.createdAt is string
         && request.resource.data.status == '접수완료';
       allow read, update, delete: if isAdmin();
     }
 
-    // Contact inquiries: contain name/phone/email/message. Same pattern.
+    // 문의하기(일반/사업/협력). 참여신청과 동일한 패턴.
     match /inquiries/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'subject', 'message', 'createdAt', 'status'])
-        && request.resource.data.keys().hasAll(['name', 'phone', 'message', 'createdAt', 'status'])
+      allow create: if request.resource.data.keys().hasOnly(['type', 'name', 'phone', 'email', 'subject', 'message', 'privacyAgreed', 'createdAt', 'status'])
+        && request.resource.data.keys().hasAll(['type', 'name', 'phone', 'message', 'createdAt', 'status'])
+        && request.resource.data.type in ['일반문의', '사업문의', '협력문의']
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 200
         && request.resource.data.phone is string
         && request.resource.data.phone.size() > 0 && request.resource.data.phone.size() < 50
-        && request.resource.data.message is string
         && request.resource.data.email is string
         && request.resource.data.email.size() < 200
         && request.resource.data.subject is string
         && request.resource.data.subject.size() > 0 && request.resource.data.subject.size() < 300
+        && request.resource.data.message is string
         && request.resource.data.message.size() > 0 && request.resource.data.message.size() < 5000
+        && request.resource.data.privacyAgreed == true
         && request.resource.data.createdAt is string
         && request.resource.data.status == '대기중';
       allow read, update, delete: if isAdmin();
     }
 
-    // Newsletter subscribers: contain email only, but still not meant for
-    // public listing/scraping. Same create-only-for-public pattern.
-    match /subscribers/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['email', 'subscribedAt', 'status'])
-        && request.resource.data.keys().hasAll(['email', 'subscribedAt', 'status'])
-        && request.resource.data.email is string
-        && request.resource.data.email.size() > 0 && request.resource.data.email.size() < 200
-        && request.resource.data.subscribedAt is string
-        && request.resource.data.status == '구독중';
-      allow read, update, delete: if isAdmin();
-    }
-
-    // Client-side error reports (2026-08 monitoring addition). Anyone's
-    // browser may report an error it hit (including anonymous visitors —
-    // that's the whole point of catching real-world failures), but only
-    // the admin can read or clear them. Deliberately small/flat shape so
-    // a malicious payload can't smuggle in something large or unrelated.
+    // 클라이언트 에러 리포트. 누구나(비로그인 포함) 생성 가능, 읽기/삭제는 관리자만.
     match /errorLogs/{id} {
       allow create: if request.resource.data.keys().hasOnly(['message', 'stack', 'url', 'userAgent', 'context', 'createdAt'])
         && request.resource.data.keys().hasAll(['message', 'url', 'createdAt'])
@@ -95,11 +79,7 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // Admin action history (2026-08 monitoring addition). Only the admin
-    // performs the actions this records, so only the admin may write —
-    // there is no public-facing reason for anyone else to create one of
-    // these — and entries are never edited after the fact, only read or
-    // (in bulk, by the admin) cleared, so the trail stays trustworthy.
+    // 관리자 행위 감사 로그. 관리자만 생성/조회/삭제 가능, 사후 수정 불가.
     match /auditLogs/{id} {
       allow create: if isAdmin()
         && request.resource.data.keys().hasOnly(['action', 'summary', 'adminEmail', 'createdAt'])
@@ -114,11 +94,29 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // Test collection is disabled in production.
+    // 페이지뷰 카운터(대시보드 "오늘 페이지뷰" 지표용, 개인정보 없음).
+    // 방문자는 하루 날짜/경로만 담긴 최소 문서를 생성만 할 수 있고,
+    // 집계 조회·삭제는 관리자만 가능합니다. GA4 Reporting API 연동은
+    // 별도 서버 인증이 필요해 범위에서 제외했다는 점이 Phase 1 보고서에
+    // 기록되어 있습니다 — 이 카운터는 그 대안으로 만든 경량 지표입니다.
+    match /visits/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['date', 'path', 'createdAt'])
+        && request.resource.data.keys().hasAll(['date', 'path', 'createdAt'])
+        && request.resource.data.date is string
+        && request.resource.data.date.size() == 10
+        && request.resource.data.path is string
+        && request.resource.data.path.size() < 200
+        && request.resource.data.createdAt is string;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // 테스트 컬렉션은 운영에서 항상 차단.
     match /test/{docId} {
       allow read, write: if false;
     }
 
+    // 기본 거부: 위에서 명시적으로 허용하지 않은 모든 경로는 차단.
     match /{document=**} {
       allow read, write: if false;
     }

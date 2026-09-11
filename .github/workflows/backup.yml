@@ -1,18 +1,19 @@
 name: Content Backup
 
-# AUTOMATED CONTENT BACKUP (2026-08 addition): runs daily and commits a
-# dated JSON snapshot of the site's public content (settings/programs/
-# notices/press/gallery/popups) into backups/. This is a safety net
-# against accidental deletion or a bad edit in the admin panel — it does
-# NOT include donor/inquiry/subscriber personal data, which never leaves
-# Firestore except via the admin panel's own "백업 다운로드" button (see
-# scripts/backup-content.mjs for why). Can also be run manually from the
-# Actions tab (workflow_dispatch) any time.
+# 매일 자동으로 공개 콘텐츠(기본정보/연혁/사업/소식/갤러리/팝업/협력기관)의
+# 날짜별 JSON 스냅샷을 backups/에 커밋합니다. 관리자 화면에서의 실수나
+# 오조작에 대비한 안전망이며, 참여신청/문의 등 개인정보는 포함하지
+# 않습니다(그 데이터는 관리자 화면의 "백업 다운로드" 버튼으로만 받을 수
+# 있습니다 — scripts/backup-content.mjs 상단 설명 참고). Actions 탭에서
+# 수동 실행(workflow_dispatch)도 가능합니다.
+#
+# 이 워크플로가 동작하려면 저장소 Settings > Secrets and variables >
+# Actions에 VITE_FIREBASE_PROJECT_ID(및 필요 시 VITE_FIREBASE_DATABASE_ID)를
+# 등록해야 합니다.
 
 on:
   schedule:
-    # 18:00 UTC = 03:00 KST — once a day, off-peak.
-    - cron: '0 18 * * *'
+    - cron: '0 18 * * *' # 18:00 UTC = 03:00 KST
   workflow_dispatch: {}
 
 permissions:
@@ -26,7 +27,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm install dotenv
       - run: node scripts/backup-content.mjs
+        env:
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_DATABASE_ID: ${{ secrets.VITE_FIREBASE_DATABASE_ID }}
       - name: Commit backup file if changed
         run: |
           git config user.name "github-actions[bot]"

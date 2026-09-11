@@ -7,7 +7,6 @@ async function startServer() {
   const app = createExpressApp();
   const PORT = 3000;
 
-  // Vite middleware for development vs static serve for production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },

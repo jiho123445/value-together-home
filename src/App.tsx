@@ -1,36 +1,94 @@
-import React, { Suspense, lazy } from 'react';
-import { FoundationProvider, useFoundation } from './context/FoundationContext';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { NoticeDetailPage } from './components/NoticeDetailPage';
-import { GalleryDetailPage } from './components/GalleryDetailPage';
-import { ProgramDetailPage } from './components/ProgramDetailPage';
-import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
-import { TermsPage } from './components/TermsPage';
-import { PopupModal } from './components/PopupModal';
-import { SyncErrorBanner } from './components/SyncErrorBanner';
-import { ModalViewer } from './components/ModalViewer';
-import { Header, Hero, Stats, Values, AboutPreview, Programs, NewsAndGallery, ContactCTA, AboutPage, ProgramsPage, NewsPage, GalleryPage, ContactPage, Footer } from './components/ValueTogetherSite';
+import React, { Suspense } from 'react';
+import { ValueTogetherProvider, useValueTogether } from './context/ValueTogetherContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { SEOHead } from './components/common/SEOHead';
+import { ModalViewer } from './components/common/ModalViewer';
+import { PopupModal } from './components/common/PopupModal';
+import { Header } from './components/layout/Header';
+import { Footer } from './components/layout/Footer';
+import { FloatingQuickMenu } from './components/layout/FloatingQuickMenu';
+import { HomePage } from './pages/HomePage';
+import { AboutPage } from './pages/AboutPage';
+import { BusinessPage } from './pages/BusinessPage';
+import { NewsPage } from './pages/NewsPage';
+import { GalleryPage } from './pages/GalleryPage';
+import { PartnersPage } from './pages/PartnersPage';
+import { ContactPage } from './pages/ContactPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsPage } from './pages/TermsPage';
+import { NoticeDetailPage } from './pages/NoticeDetailPage';
+import { ProgramDetailPage } from './pages/ProgramDetailPage';
+import { GalleryDetailPage } from './pages/GalleryDetailPage';
 
-const AdminModal = lazy(() => import('./components/AdminModal').then(m => ({ default: m.AdminModal })));
+// 관리자 화면은 방문자 번들에 전혀 포함되지 않도록 React.lazy로 완전히
+// 분리합니다 (관리자 UID 확인 → 로그인 화면 → 대시보드까지 전부 이 청크 안).
+const AdminApp = React.lazy(() => import('./admin/AdminApp').then((m) => ({ default: m.AdminApp })));
 
-const MainContent: React.FC = () => {
-  const { activeTab, adminOpen } = useFoundation();
-  return <main className="min-h-screen">
-    {activeTab === 'main' && <><Hero/><Stats/><Values/><AboutPreview/><Programs/><NewsAndGallery/><ContactCTA/></>}
-    {activeTab === 'about' && <AboutPage/>}
-    {activeTab === 'programs' && <ProgramsPage/>}
-    {activeTab === 'news' && <NewsPage/>}
-    {activeTab === 'gallery' && <GalleryPage/>}
-    {activeTab === 'contact' && <ContactPage/>}
-    {activeTab === 'press' && <NewsPage/>}
-    {activeTab === 'donate' && <ContactPage/>}
-    {activeTab === 'privacy' && <PrivacyPolicyPage/>}
-    {activeTab === 'terms' && <TermsPage/>}
-    {activeTab === 'notice-detail' && <NoticeDetailPage/>}
-    {activeTab === 'gallery-detail' && <GalleryDetailPage/>}
-    {activeTab === 'program-detail' && <ProgramDetailPage/>}
-    {adminOpen && <Suspense fallback={null}><AdminModal/></Suspense>}
-  </main>;
+const SiteShell: React.FC = () => {
+  const { activeTab, adminOpen } = useValueTogether();
+
+  if (adminOpen) {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-ink text-white text-sm font-bold">
+            관리자 화면을 불러오는 중...
+          </div>
+        }
+      >
+        <AdminApp />
+      </Suspense>
+    );
+  }
+
+  let page: React.ReactNode;
+  switch (activeTab) {
+    case 'about':
+      page = <AboutPage />; break;
+    case 'business':
+      page = <BusinessPage />; break;
+    case 'news':
+      page = <NewsPage />; break;
+    case 'gallery':
+      page = <GalleryPage />; break;
+    case 'partners':
+      page = <PartnersPage />; break;
+    case 'contact':
+      page = <ContactPage />; break;
+    case 'privacy':
+      page = <PrivacyPolicyPage />; break;
+    case 'terms':
+      page = <TermsPage />; break;
+    case 'news-detail':
+      page = <NoticeDetailPage />; break;
+    case 'business-detail':
+      page = <ProgramDetailPage />; break;
+    case 'gallery-detail':
+      page = <GalleryDetailPage />; break;
+    case 'main':
+    default:
+      page = <HomePage />; break;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-paper">
+      <SEOHead />
+      <Header />
+      <main className="flex-1">{page}</main>
+      <Footer />
+      <ModalViewer />
+      <PopupModal />
+      <FloatingQuickMenu />
+    </div>
+  );
 };
 
-export default function App(){return <ErrorBoundary><FoundationProvider><div className="app-shell"><Header/><MainContent/><PopupModal/><ModalViewer/><SyncErrorBanner/><Footer/></div></FoundationProvider></ErrorBoundary>}
+const App: React.FC = () => (
+  <ErrorBoundary>
+    <ValueTogetherProvider>
+      <SiteShell />
+    </ValueTogetherProvider>
+  </ErrorBoundary>
+);
+
+export default App;

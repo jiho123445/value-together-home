@@ -1,1 +1,12 @@
-{"name":"사회적협동조합 가치함께","short_name":"가치함께","start_url":"/","display":"standalone","background_color":"#fbfcf9","theme_color":"#0b2922","icons":[{"src":"/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"/icon-512.png","sizes":"512x512","type":"image/png"}]}
+{
+  "name": "사회적협동조합 가치함께",
+  "short_name": "가치함께",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#B9832A",
+  "background_color": "#FBF9F5",
+  "display": "standalone",
+  "start_url": "/"
+}

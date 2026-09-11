@@ -1,46 +1,44 @@
-// Generates a static HTML preview page for every notice/program/gallery
-// item, run as part of `npm run build` (AFTER vite build, so dist/index.html
-// already exists).
+// 빌드 시점 정적 미리보기(og:*)/sitemap.xml 생성 스크립트.
 //
-// WHY: KakaoTalk, Facebook, etc. link-preview bots and search crawlers read
-// raw HTML without running JavaScript. This app is a client-rendered SPA,
-// so every shared link previously showed the same generic foundation-wide
-// title/description no matter which notice/program/gallery item was linked.
+// 왜 필요한가: 이 앱은 클라이언트에서 렌더링되는 SPA이기 때문에, 카카오톡/
+// 페이스북 등 링크 미리보기 봇과 검색엔진 크롤러는 JS를 실행하지 않고
+// index.html의 <head> 메타태그만 읽습니다. 그대로 두면 소식/사업/갤러리
+// 상세 링크를 공유해도 항상 메인 페이지의 제목/설명만 보이게 됩니다.
 //
-// HOW: For each item, this copies dist/index.html and swaps just the
-// <head> meta tags (title/description/og:*/twitter:*) for that item's own
-// title/summary/image, writing the result to e.g. dist/notices/{id}.html.
-// The rest of the page — all the <script>/<link> tags — is untouched, so
-// when a real visitor opens the link, the exact same React app boots and
-// takes over immediately; they see no difference from today. Only the
-// server-rendered <head>, which crawlers read before JS ever runs,
-// changes.
+// 어떻게 하는가: `npm run build`(vite build 이후)에서 dist/index.html을
+// 각 항목별로 복사하고 <head> 메타태그(title/description/og:*/twitter:*)만
+// 그 항목의 실제 제목/요약/이미지로 치환해 dist/news/{id}.html 등에
+// 저장합니다. 나머지(<script>/<link>)는 그대로이므로, 실제 방문자가 링크를
+// 열면 평소와 동일하게 React 앱이 그대로 부팅합니다.
 //
-// This intentionally does NOT touch any server/runtime code (no Express
-// route, no Edge Middleware) — it only adds extra static files, so there
-// is no new server-side code path that could crash in production. If this
-// script fails or Firestore is unreachable at build time, it logs a
-// warning and exits successfully without generating any preview
-// pages — the build (and the rest of the site) is never blocked by this.
+// 안전장치: Firebase 프로젝트 정보(VITE_FIREBASE_PROJECT_ID)가 아직 설정되지
+// 않았거나 Firestore를 가져오지 못해도 절대 빌드 자체를 실패시키지 않고
+// 경고만 남긴 뒤 건너뜁니다.
+import fs from 'node:fs';
+import path from 'node:path';
+import dotenv from 'dotenv';
 
-import fs from "fs";
-import path from "path";
+dotenv.config({ path: '.env.local' });
 
-const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || "";
-const DATABASE_ID = process.env.VITE_FIREBASE_DATABASE_ID || "(default)";
-const SITE_ORIGIN = process.env.SITE_ORIGIN || "https://value-together.vercel.app";
-const SITE_NAME = "사회적협동조합 가치함께";
-const DIST_DIR = path.join(process.cwd(), "dist");
+const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || '';
+const DATABASE_ID = process.env.VITE_FIREBASE_DATABASE_ID || '(default)';
+const SITE_ORIGIN = (process.env.SITE_URL || 'https://your-domain.example').replace(/\/$/, '');
+const SITE_NAME = '사회적협동조합 가치함께';
+const DIST_DIR = path.join(process.cwd(), 'dist');
+
+// App.tsx / ValueTogetherContext.tsx의 parsePath()가 인식하는 상위 경로와
+// 반드시 동일해야 합니다.
+const TOP_LEVEL_ROUTES = ['about', 'business', 'news', 'gallery', 'partners', 'contact', 'privacy', 'terms'];
 
 function unwrapFirestoreValue(value) {
   if (value == null) return null;
-  if ("stringValue" in value) return value.stringValue;
-  if ("integerValue" in value) return Number(value.integerValue);
-  if ("doubleValue" in value) return value.doubleValue;
-  if ("booleanValue" in value) return value.booleanValue;
-  if ("nullValue" in value) return null;
-  if ("arrayValue" in value) return (value.arrayValue.values || []).map(unwrapFirestoreValue);
-  if ("mapValue" in value) {
+  if ('stringValue' in value) return value.stringValue;
+  if ('integerValue' in value) return Number(value.integerValue);
+  if ('doubleValue' in value) return value.doubleValue;
+  if ('booleanValue' in value) return value.booleanValue;
+  if ('nullValue' in value) return null;
+  if ('arrayValue' in value) return (value.arrayValue.values || []).map(unwrapFirestoreValue);
+  if ('mapValue' in value) {
     const out = {};
     const fields = value.mapValue.fields || {};
     for (const key of Object.keys(fields)) out[key] = unwrapFirestoreValue(fields[key]);
@@ -51,16 +49,16 @@ function unwrapFirestoreValue(value) {
 
 function escapeHtml(input) {
   return String(input)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function truncate(text, max) {
-  const clean = String(text || "").replace(/\s+/g, " ").trim();
-  return clean.length > max ? clean.slice(0, max - 1) + "…" : clean;
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  return clean.length > max ? clean.slice(0, max - 1) + '…' : clean;
 }
 
 function buildPreviewHtml(shellHtml, opts) {
@@ -70,214 +68,148 @@ function buildPreviewHtml(shellHtml, opts) {
   const ogImage = image || `${SITE_ORIGIN}/og-image.png`;
 
   let html = shellHtml;
-
-  // Replace the <title>...</title> tag.
   html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(fullTitle)}</title>`);
 
-  // Replace each of these meta tags' content attribute if present.
   const metaReplacements = [
     [/(<meta\s+name="description"\s+content=")[^"]*(")/, `$1${escapeHtml(description)}$2`],
     [/(<meta\s+property="og:title"\s+content=")[^"]*(")/, `$1${escapeHtml(title)}$2`],
     [/(<meta\s+property="og:description"\s+content=")[^"]*(")/, `$1${escapeHtml(description)}$2`],
     [/(<meta\s+property="og:image"\s+content=")[^"]*(")/, `$1${escapeHtml(ogImage)}$2`],
-    [/(<meta\s+property="og:image:secure_url"\s+content=")[^"]*(")/, `$1${escapeHtml(ogImage)}$2`],
     [/(<meta\s+property="og:url"\s+content=")[^"]*(")/, `$1${escapeHtml(canonicalUrl)}$2`],
     [/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/, `$1${escapeHtml(title)}$2`],
     [/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/, `$1${escapeHtml(description)}$2`],
     [/(<meta\s+name="twitter:image"\s+content=")[^"]*(")/, `$1${escapeHtml(ogImage)}$2`],
   ];
-  for (const [pattern, replacement] of metaReplacements) {
-    html = html.replace(pattern, replacement);
-  }
+  for (const [pattern, replacement] of metaReplacements) html = html.replace(pattern, replacement);
 
-  // Add a canonical link right before </head> if not already present.
   if (!html.includes('rel="canonical"')) {
-    html = html.replace("</head>", `    <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />\n  </head>`);
+    html = html.replace('</head>', `    <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />\n  </head>`);
   }
-
   return html;
+}
+
+async function fetchContentDoc(docId) {
+  if (!PROJECT_ID) return null;
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/${DATABASE_ID}/documents/content/${docId}`;
+    const res = await fetch(url);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`Firestore fetch failed for content/${docId}: ${res.status}`);
+    const json = await res.json();
+    const fields = json.fields || {};
+    const out = {};
+    for (const key of Object.keys(fields)) out[key] = unwrapFirestoreValue(fields[key]);
+    return out;
+  } catch (e) {
+    console.warn(`[generate-previews] Could not fetch content/${docId}:`, e.message);
+    return null;
+  }
 }
 
 async function main() {
   let shellHtml;
   try {
-    shellHtml = fs.readFileSync(path.join(DIST_DIR, "index.html"), "utf-8");
-  } catch (e) {
-    console.warn("[generate-previews] dist/index.html not found, skipping preview generation.");
+    shellHtml = fs.readFileSync(path.join(DIST_DIR, 'index.html'), 'utf-8');
+  } catch {
+    console.warn('[generate-previews] dist/index.html not found, skipping preview generation.');
     return;
   }
 
-  // BUG FIX (2026-08-23, updated after /news also 404'd): every top-level
-  // route this SPA recognizes (see the `validTabs` list in
-  // src/context/FoundationContext.tsx's parsePath()) needs a real static
-  // index.html at its own path. Originally only notices/programs/gallery
-  // got this treatment, on the assumption that vercel.json's catch-all
-  // rewrite ("/(.*)" -> "/index.html") would handle every other path. It
-  // turned out that catch-all rewrite isn't actually being applied on
-  // this deployment for *any* bare route with no matching file — /news
-  // 404'd exactly like /gallery originally did, and /about, /press,
-  // /family-center, /donate, /contact were almost certainly broken the
-  // same way, just not yet noticed. Rather than keep discovering these
-  // one broken link at a time, every route the app itself can navigate to
-  // now gets a real file, which always takes priority over routing
-  // config and works regardless of whatever is preventing the rewrite
-  // from firing. This happens BEFORE the Firestore fetch below (and
-  // unconditionally, regardless of whether that fetch succeeds) precisely
-  // because it must never be skipped.
-  const TOP_LEVEL_ROUTES = [
-    "notices",
-    "programs",
-    "gallery",
-    "about",
-    "news",
-    "press",
-    "family-center",
-    "donate",
-    "contact",
-    "privacy",
-    "terms"
-  ];
+  // 앱이 인식하는 모든 상위 경로는 항상 실제 파일을 갖도록 합니다(호스팅
+  // rewrite 설정과 무관하게 새로고침/직접 접근이 항상 동작하도록).
   for (const route of TOP_LEVEL_ROUTES) {
     const dir = path.join(DIST_DIR, route);
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, "index.html"), shellHtml, "utf-8");
+    fs.writeFileSync(path.join(dir, 'index.html'), shellHtml, 'utf-8');
   }
-  // Re-usable directory paths for the per-item preview files written below.
-  const noticesDir = path.join(DIST_DIR, "notices");
-  const programsDir = path.join(DIST_DIR, "programs");
-  const galleryDir = path.join(DIST_DIR, "gallery");
 
-  // (2026-08 버그 수정) 이 스크립트는 원래 `foundation/global` 문서 하나만
-  // 읽었는데, 앱은 그 사이 콘텐츠를 `foundation/notices`, `/programs`,
-  // `/gallery` 등 영역별 개별 문서로 나눠 저장하는 방식으로 바뀌었고(위
-  // FoundationContext.tsx의 실시간 리스너와 동일한 마이그레이션 방식),
-  // 관리자가 그 이후 새로 쓰거나 수정한 공지/사업/갤러리 항목은
-  // `foundation/global`에는 반영되지 않습니다. 즉 이 스크립트가 만드는
-  // 카카오톡/문자 링크 미리보기와 sitemap이 마이그레이션 이후 추가·수정된
-  // 항목을 계속 놓치고 있었습니다. FoundationContext.tsx와 완전히 동일한
-  // 규칙(영역별 새 문서를 우선하고, 그 문서가 아직 없으면 예전 global
-  // 문서의 해당 필드로 대체)으로 고칩니다.
-  async function fetchFoundationDoc(docId) {
-    try {
-      const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/${DATABASE_ID}/documents/foundation/${docId}`;
-      const res = await fetch(url);
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`Firestore fetch failed for foundation/${docId}: ${res.status}`);
-      const json = await res.json();
-      const fields = json.fields || {};
-      const out = {};
-      for (const key of Object.keys(fields)) out[key] = unwrapFirestoreValue(fields[key]);
-      return out;
-    } catch (e) {
-      console.warn(`[generate-previews] Could not fetch foundation/${docId}:`, e.message);
-      return null;
-    }
+  if (!PROJECT_ID) {
+    console.warn('[generate-previews] VITE_FIREBASE_PROJECT_ID가 설정되지 않아 항목별 미리보기/사이트맵 생성을 건너뜁니다. (상위 경로 정적 파일은 정상 생성됨)');
+    return;
   }
+
+  const newsDir = path.join(DIST_DIR, 'news');
+  const businessDir = path.join(DIST_DIR, 'business');
+  const galleryDir = path.join(DIST_DIR, 'gallery');
 
   let notices = [];
   let programs = [];
   let gallery = [];
   try {
-    const [legacyDoc, noticesDoc, programsDoc, galleryDoc] = await Promise.all([
-      fetchFoundationDoc("global"),
-      fetchFoundationDoc("notices"),
-      fetchFoundationDoc("programs"),
-      fetchFoundationDoc("gallery"),
+    const [noticesDoc, programsDoc, galleryDoc] = await Promise.all([
+      fetchContentDoc('notices'),
+      fetchContentDoc('programs'),
+      fetchContentDoc('gallery'),
     ]);
-    if (!legacyDoc && !noticesDoc && !programsDoc && !galleryDoc) {
-      throw new Error("모든 foundation/* 문서를 가져오지 못했습니다 (네트워크 차단 또는 빌드 환경 문제일 수 있음)");
-    }
-    const legacy = legacyDoc || {};
-    notices = noticesDoc?.items ?? legacy.notices ?? [];
-    programs = programsDoc?.items ?? legacy.programs ?? [];
-    gallery = galleryDoc?.items ?? legacy.gallery ?? [];
+    notices = noticesDoc?.items ?? [];
+    programs = programsDoc?.items ?? [];
+    gallery = galleryDoc?.items ?? [];
   } catch (e) {
-    console.warn("[generate-previews] Could not fetch Firestore data at build time, skipping per-item preview generation:", e.message);
+    console.warn('[generate-previews] Firestore 조회 실패, 항목별 미리보기 생성을 건너뜁니다:', e.message);
     return;
   }
 
   let count = 0;
-
   for (const notice of notices) {
     if (!notice?.id) continue;
+    fs.mkdirSync(newsDir, { recursive: true });
     const imageAttachment = (notice.attachments || []).find(
-      (a) => /^(jpe?g|png|webp|gif)$/i.test(a.type || "") || /\.(jpe?g|png|webp|gif)$/i.test(a.url || "")
+      (a) => /^(jpe?g|png|webp|gif)$/i.test(a.type || '') || /\.(jpe?g|png|webp|gif)$/i.test(a.url || '')
     );
     const html = buildPreviewHtml(shellHtml, {
-      title: notice.title || "공지사항",
-      description: truncate(notice.content || "", 120),
+      title: notice.title || '소식',
+      description: truncate(notice.content || '', 120),
       image: imageAttachment?.url,
-      canonicalPath: `/notices/${encodeURIComponent(notice.id)}`,
+      canonicalPath: `/news/${encodeURIComponent(notice.id)}`,
     });
-    fs.writeFileSync(path.join(noticesDir, `${notice.id}.html`), html, "utf-8");
+    fs.writeFileSync(path.join(newsDir, `${notice.id}.html`), html, 'utf-8');
     count++;
   }
-
   for (const program of programs) {
     if (!program?.id) continue;
+    fs.mkdirSync(businessDir, { recursive: true });
     const html = buildPreviewHtml(shellHtml, {
-      title: program.title || "주요사업",
-      description: truncate(program.summary || "", 120),
-      canonicalPath: `/programs/${encodeURIComponent(program.id)}`,
+      title: program.title || '주요사업',
+      description: truncate(program.summary || '', 120),
+      image: program.imageUrl,
+      canonicalPath: `/business/${encodeURIComponent(program.id)}`,
     });
-    fs.writeFileSync(path.join(programsDir, `${program.id}.html`), html, "utf-8");
+    fs.writeFileSync(path.join(businessDir, `${program.id}.html`), html, 'utf-8');
     count++;
   }
-
   for (const item of gallery) {
     if (!item?.id) continue;
+    fs.mkdirSync(galleryDir, { recursive: true });
     const html = buildPreviewHtml(shellHtml, {
-      title: item.title || "갤러리",
-      description: truncate(item.description || "", 120),
+      title: item.title || '갤러리',
+      description: truncate(item.description || '', 120),
       image: item.imageUrl,
       canonicalPath: `/gallery/${encodeURIComponent(item.id)}`,
     });
-    fs.writeFileSync(path.join(galleryDir, `${item.id}.html`), html, "utf-8");
+    fs.writeFileSync(path.join(galleryDir, `${item.id}.html`), html, 'utf-8');
     count++;
   }
 
-  // (2026-08 추가) public/sitemap.xml은 지금까지 상위 9개 경로만 수기로
-  // 적어둔 정적 파일이라, 개별 공지/사업/갤러리 상세 페이지와 privacy/terms
-  // 페이지는 검색엔진이 sitemap만으로는 찾을 수 없었습니다. 위에서 이미
-  // 만든 미리보기 페이지들과 동일한 데이터로 sitemap.xml을 빌드 시점에
-  // 다시 만들어 dist/sitemap.xml로 내보냅니다(vite build가 만든
-  // dist/sitemap.xml — public/의 정적 사본을 복사한 것 — 을 덮어씁니다).
   const todayIso = new Date().toISOString().slice(0, 10);
   const sitemapUrls = [
-    { loc: `${SITE_ORIGIN}/`, changefreq: "weekly", priority: "1.0" },
+    { loc: `${SITE_ORIGIN}/`, changefreq: 'weekly', priority: '1.0' },
     ...TOP_LEVEL_ROUTES.map((route) => ({
       loc: `${SITE_ORIGIN}/${route}`,
-      changefreq: route === "notices" ? "daily" : "monthly",
-      priority: route === "notices" || route === "programs" ? "0.8" : "0.6",
+      changefreq: route === 'news' ? 'daily' : 'monthly',
+      priority: route === 'news' || route === 'business' ? '0.8' : '0.6',
     })),
-    ...notices.filter((n) => n?.id).map((n) => ({
-      loc: `${SITE_ORIGIN}/notices/${encodeURIComponent(n.id)}`,
-      changefreq: "monthly",
-      priority: "0.6",
-    })),
-    ...programs.filter((p) => p?.id).map((p) => ({
-      loc: `${SITE_ORIGIN}/programs/${encodeURIComponent(p.id)}`,
-      changefreq: "monthly",
-      priority: "0.6",
-    })),
-    ...gallery.filter((g) => g?.id).map((g) => ({
-      loc: `${SITE_ORIGIN}/gallery/${encodeURIComponent(g.id)}`,
-      changefreq: "monthly",
-      priority: "0.5",
-    })),
+    ...notices.filter((n) => n?.id).map((n) => ({ loc: `${SITE_ORIGIN}/news/${encodeURIComponent(n.id)}`, changefreq: 'monthly', priority: '0.6' })),
+    ...programs.filter((p) => p?.id).map((p) => ({ loc: `${SITE_ORIGIN}/business/${encodeURIComponent(p.id)}`, changefreq: 'monthly', priority: '0.6' })),
+    ...gallery.filter((g) => g?.id).map((g) => ({ loc: `${SITE_ORIGIN}/gallery/${encodeURIComponent(g.id)}`, changefreq: 'monthly', priority: '0.5' })),
   ];
   const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls
-    .map(
-      (u) =>
-        `  <url>\n    <loc>${escapeHtml(u.loc)}</loc>\n    <lastmod>${todayIso}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`
-    )
-    .join("\n")}\n</urlset>\n`;
-  fs.writeFileSync(path.join(DIST_DIR, "sitemap.xml"), sitemapXml, "utf-8");
+    .map((u) => `  <url>\n    <loc>${escapeHtml(u.loc)}</loc>\n    <lastmod>${todayIso}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`)
+    .join('\n')}\n</urlset>\n`;
+  fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemapXml, 'utf-8');
 
   console.log(`[generate-previews] Generated ${count} static preview pages, sitemap.xml with ${sitemapUrls.length} URLs.`);
 }
 
 main().catch((e) => {
-  // Never fail the build because of this script.
-  console.warn("[generate-previews] Unexpected error, skipping preview generation:", e);
+  console.warn('[generate-previews] Unexpected error, skipping preview generation:', e);
 });
