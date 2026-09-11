@@ -78,6 +78,16 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
+    // 핵심가치 대표 실사 이미지: 1개당 최대 10MiB.
+    match /core-values/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp']
+        && request.resource.name.matches('.*\\.(jpg|JPG|jpeg|JPEG|png|PNG|webp|WEBP)$');
+      allow delete: if isAdmin();
+    }
+
     // 협력기관 로고: 1개당 최대 5MiB.
     match /partners/{allPaths=**} {
       allow read: if true;
