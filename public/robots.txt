@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://value-together.vercel.app/sitemap.xml
