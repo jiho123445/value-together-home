@@ -212,7 +212,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
   </div>
 );
 
-function ListEditor<T extends { id?: string }>({
+function ListEditor<T extends object>({
   items, onChange, newItem, renderRow, addLabel,
 }: {
   items: T[];
@@ -224,7 +224,7 @@ function ListEditor<T extends { id?: string }>({
   return (
     <div className="space-y-2.5">
       {items.map((item, idx) => (
-        <div key={item.id || idx} className="flex items-start gap-2">
+        <div key={(item as { id?: string }).id ?? idx} className="flex items-start gap-2">
           {renderRow(item, (next) => {
             const copy = [...items]; copy[idx] = next; onChange(copy);
           })}
