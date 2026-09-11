@@ -20,7 +20,7 @@ export const StatsSection: React.FC = () => {
   if (visibleStats.length === 0) return null;
 
   return (
-    <section className="py-14 sm:py-16 bg-secondary-ink text-white">
+    <section className="py-16 sm:py-20 bg-secondary-ink text-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className={`grid grid-cols-2 ${visibleStats.length >= 3 ? 'lg:grid-cols-4' : 'lg:grid-cols-2'} gap-6 sm:gap-8`}>
           {visibleStats.map((stat) => {
@@ -29,11 +29,11 @@ export const StatsSection: React.FC = () => {
             return (
               <div key={stat.key} className="text-center space-y-2">
                 <Icon className="w-6 h-6 mx-auto text-white/60" />
-                <p className="font-display font-black text-3xl sm:text-4xl tabular-nums">
+                <p className="font-display font-black text-4xl sm:text-5xl tabular-nums">
                   {value.toLocaleString('ko-KR')}
                   <span className="text-lg font-bold ml-0.5">{stat.suffix}</span>
                 </p>
-                <p className="text-xs sm:text-sm text-white/70 font-medium">{stat.label}</p>
+                <p className="text-sm sm:text-base text-white/70 font-medium">{stat.label}</p>
               </div>
             );
           })}

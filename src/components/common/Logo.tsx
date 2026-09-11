@@ -9,7 +9,7 @@ interface LogoProps {
 }
 
 const SIZE_MAP: Record<NonNullable<LogoProps['size']>, { mark: string; word: string }> = {
-  header: { mark: 'h-9 w-9 sm:h-10 sm:w-10', word: 'text-lg sm:text-xl' },
+  header: { mark: 'h-11 w-11 sm:h-12 sm:w-12', word: 'text-xl sm:text-2xl' },
   hero: { mark: 'h-14 w-14 sm:h-16 sm:w-16', word: 'text-2xl sm:text-3xl' },
   footer: { mark: 'h-8 w-8', word: 'text-base' },
 };

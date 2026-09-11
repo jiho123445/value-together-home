@@ -43,18 +43,18 @@ export const Header: React.FC = () => {
         scrolled ? 'border-line shadow-sm' : 'border-transparent'
       }`}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-[72px] flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 sm:h-[80px] flex items-center justify-between gap-4">
         <button type="button" onClick={() => setActiveTab('main')} className="shrink-0" aria-label="홈으로 이동">
           <Logo size="header" />
         </button>
 
-        <nav className="hidden lg:flex items-center gap-1" aria-label="주요 메뉴">
+        <nav className="hidden lg:flex items-center gap-2" aria-label="주요 메뉴">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.tab}
               type="button"
               onClick={() => setActiveTab(item.tab)}
-              className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+              className={`px-4 py-3 rounded-xl text-base font-extrabold transition-colors ${
                 currentTop === item.tab ? 'text-primary-ink bg-primary-soft' : 'text-ink-soft hover:text-ink hover:bg-paper-soft'
               }`}
             >
@@ -67,7 +67,7 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('contact')}
-            className="px-5 py-2.5 rounded-xl bg-primary text-primary-ink text-sm font-extrabold shadow-sm hover:opacity-90 transition-opacity"
+            className="px-6 py-3 rounded-xl bg-primary text-primary-ink text-base font-extrabold shadow-sm hover:opacity-90 transition-opacity"
           >
             문의하기
           </button>
