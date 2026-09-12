@@ -26,7 +26,7 @@ export const Hero: React.FC = () => {
             <HeartHandshake className="w-4 h-4" />
             사회적협동조합 가치함께
           </span>
-          <h1 className="font-display font-black text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.45] text-ink">
+          <h1 className="font-display font-black text-[26px] sm:text-5xl lg:text-[3.25rem] leading-[1.4] text-ink">
             {sloganLine2 ? (
               <>
                 {sloganLine1}
