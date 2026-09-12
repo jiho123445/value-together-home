@@ -2,14 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { collection, getCountFromServer, getDocs, limit as fbLimit, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useValueTogether } from '../../context/ValueTogetherContext';
-import { Eye, Newspaper, HeartHandshake, MessageSquare, Image as ImageIcon, Plus, ScrollText } from 'lucide-react';
+import { Eye, Newspaper, HeartHandshake, MessageSquare, Image as ImageIcon, Plus, ScrollText, RotateCcw } from 'lucide-react';
 
 interface AuditRow { id: string; action: string; summary: string; adminEmail?: string; createdAt: string }
 
 export const DashboardTab: React.FC<{ onNavigate: (tab: any) => void }> = ({ onNavigate }) => {
-  const { notices, gallery, participations, inquiries, programs, pendingParticipationsCount, pendingInquiriesCount } = useValueTogether();
+  const { notices, gallery, participations, inquiries, programs, pendingParticipationsCount, pendingInquiriesCount, resetToDefaults } = useValueTogether();
   const [todayViews, setTodayViews] = useState<number | null>(null);
   const [recentActivity, setRecentActivity] = useState<AuditRow[]>([]);
+
+  const handleReset = () => {
+    const ok = window.confirm(
+      '기본정보/주요사업 6개/연혁/소식/갤러리/협력기관을 코드에 저장된 기본값으로 되돌립니다.\n' +
+      '지금까지 관리자 화면에서 직접 입력·수정한 내용은 모두 사라집니다. 계속하시겠습니까?'
+    );
+    if (!ok) return;
+    resetToDefaults();
+  };
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -42,10 +51,12 @@ export const DashboardTab: React.FC<{ onNavigate: (tab: any) => void }> = ({ onN
       </div>
 
       <div className="flex flex-wrap gap-2.5">
+        <QuickAction icon={ImageIcon} label="메인 배너 변경" onClick={() => onNavigate('settings')} />
         <QuickAction icon={Plus} label="사업 추가" onClick={() => onNavigate('programs')} />
         <QuickAction icon={Plus} label="소식 작성" onClick={() => onNavigate('notices')} />
         <QuickAction icon={Plus} label="갤러리 등록" onClick={() => onNavigate('gallery')} />
         <QuickAction icon={Plus} label="팝업 등록" onClick={() => onNavigate('popups')} />
+        <QuickAction icon={RotateCcw} label="기본 콘텐츠로 초기화" onClick={handleReset} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">

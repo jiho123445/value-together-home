@@ -53,10 +53,34 @@ export const INITIAL_SETTINGS: OrgSettings = {
   bankAccounts: [],
   snsLinks: {},
   coreValues: [
-    { id: 'val-people', title: '사람', description: '모든 사업의 중심에 사람을 둡니다.', icon: 'people' },
-    { id: 'val-together', title: '함께', description: '조합원과 이용자, 협력기관이 함께 만듭니다.', icon: 'together' },
-    { id: 'val-community', title: '지역사회', description: '지역과 함께 자라는 사업을 만듭니다.', icon: 'community' },
-    { id: 'val-sustainability', title: '지속가능성', description: '단발성이 아닌 오래가는 구조를 만듭니다.', icon: 'sustainability' },
+    {
+      id: 'val-people',
+      title: '사람',
+      description: '모든 사업의 중심에 사람을 둡니다.',
+      icon: 'people',
+      imageUrl: '/images/core-values/core-people.jpg',
+    },
+    {
+      id: 'val-together',
+      title: '함께',
+      description: '조합원과 이용자, 협력기관이 함께 만듭니다.',
+      icon: 'together',
+      imageUrl: '/images/core-values/core-together.jpg',
+    },
+    {
+      id: 'val-community',
+      title: '지역사회',
+      description: '지역과 함께 자라는 사업을 만듭니다.',
+      icon: 'community',
+      imageUrl: '/images/core-values/core-community.jpg',
+    },
+    {
+      id: 'val-sustainability',
+      title: '지속가능성',
+      description: '단발성이 아닌 오래가는 구조를 만듭니다.',
+      icon: 'sustainability',
+      imageUrl: '/images/core-values/core-sustainability.jpg',
+    },
   ],
   operatingPrinciples: [
     {
@@ -249,7 +273,7 @@ export const INITIAL_PROGRAMS: ProgramItem[] = [
     ],
     targetAudience: '지역 내 사회적경제 조직 및 지역주민',
     impactMessage: '협동의 경험을 나누며 지역의 사회적경제 생태계를 함께 키워갑니다.',
-    iconName: 'Sparkles',
+    iconName: 'Share2',
     imageUrl: '/images/programs/program-etc.jpg',
     featuredOnHome: true,
     order: 6,

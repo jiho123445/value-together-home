@@ -3,6 +3,7 @@ import { useValueTogether } from '../../context/ValueTogetherContext';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { ProgramCategory, ProgramItem } from '../../types';
 import { Plus, Trash2, Pencil, X, Save } from 'lucide-react';
+import { getProgramPhoto } from '../../utils/programPhoto';
 
 const CATEGORIES: ProgramCategory[] = ['사회서비스', '교육사업', '지역사회사업', '돌봄복지사업', '일자리자립지원', '기타사업'];
 const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary';
@@ -119,22 +120,30 @@ export const ProgramsTab: React.FC = () => {
       )}
 
       <div className="grid sm:grid-cols-2 gap-4">
-        {[...programs].sort((a, b) => a.order - b.order).map((p) => (
-          <div key={p.id} className="bg-paper-card border border-line rounded-2xl p-5 space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <span className="text-[11px] font-bold text-secondary-ink bg-secondary-soft px-2 py-0.5 rounded-full">{p.category}</span>
-                <h3 className="font-bold text-ink text-sm mt-1.5 truncate">{p.title}</h3>
+        {[...programs].sort((a, b) => a.order - b.order).map((p) => {
+          const photo = getProgramPhoto(p, getImageUrl);
+          return (
+            <div key={p.id} className="bg-paper-card border border-line rounded-2xl p-4 sm:p-5 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-line shrink-0 bg-paper-soft">
+                    <img src={photo} alt={p.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-bold text-secondary-ink bg-secondary-soft px-2 py-0.5 rounded-full">{p.category}</span>
+                    <h3 className="font-bold text-ink text-sm mt-1 truncate">{p.title}</h3>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => startEdit(p)} className="p-2 text-ink-soft hover:text-ink rounded-lg hover:bg-paper-soft"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => confirm(`'${p.title}' 사업을 삭제할까요?`) && deleteProgram(p.id)} className="p-2 text-ink-soft hover:text-red-600 rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+                </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => startEdit(p)} className="p-2 text-ink-soft hover:text-ink rounded-lg hover:bg-paper-soft"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => confirm(`'${p.title}' 사업을 삭제할까요?`) && deleteProgram(p.id)} className="p-2 text-ink-soft hover:text-red-600 rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
-              </div>
+              <p className="text-xs text-ink-soft line-clamp-2">{p.summary}</p>
+              {p.featuredOnHome && <span className="text-[10px] font-bold text-primary-ink">메인 노출중</span>}
             </div>
-            <p className="text-xs text-ink-soft line-clamp-2">{p.summary}</p>
-            {p.featuredOnHome && <span className="text-[10px] font-bold text-primary-ink">메인 노출중</span>}
-          </div>
-        ))}
+          );
+        })}
         {programs.length === 0 && <p className="text-sm text-ink-soft py-8 text-center col-span-2">등록된 사업이 없습니다.</p>}
       </div>
     </div>

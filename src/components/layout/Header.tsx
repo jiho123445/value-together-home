@@ -43,19 +43,21 @@ export const Header: React.FC = () => {
         scrolled ? 'border-line shadow-sm' : 'border-transparent'
       }`}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 sm:h-[92px] flex items-center justify-between gap-4">
-        <button type="button" onClick={() => setActiveTab('main')} className="shrink-0" aria-label="홈으로 이동">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-20 sm:h-[98px] flex items-center justify-between gap-3 lg:gap-6">
+        <button type="button" onClick={() => setActiveTab('main')} className="shrink-0 transition-transform hover:scale-[1.02]" aria-label="홈으로 이동">
           <Logo size="header" />
         </button>
 
-        <nav className="hidden lg:flex items-center gap-1" aria-label="주요 메뉴">
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="주요 메뉴">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.tab}
               type="button"
               onClick={() => setActiveTab(item.tab)}
-              className={`px-4 py-2.5 rounded-xl text-base font-bold transition-colors ${
-                currentTop === item.tab ? 'text-primary-ink bg-primary-soft' : 'text-ink-soft hover:text-ink hover:bg-paper-soft'
+              className={`px-3.5 xl:px-4 py-2.5 rounded-xl text-[17px] xl:text-[18px] transition-all whitespace-nowrap ${
+                currentTop === item.tab
+                  ? 'text-primary-ink bg-primary-soft font-black shadow-xs'
+                  : 'text-ink/85 hover:text-ink hover:bg-paper-soft font-extrabold'
               }`}
             >
               {item.label}
@@ -63,20 +65,20 @@ export const Header: React.FC = () => {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('contact')}
-            className="px-6 py-3 rounded-xl bg-primary text-primary-ink text-base font-extrabold shadow-sm hover:opacity-90 transition-opacity"
+            className="px-3.5 py-2 rounded-xl bg-primary text-primary-ink text-[15px] font-extrabold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            문의하기
+            <span>문의하기</span>
           </button>
         </div>
 
         <button
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
-          className="lg:hidden p-2 text-ink rounded-lg hover:bg-paper-soft"
+          className="lg:hidden p-2.5 text-ink rounded-xl hover:bg-paper-soft border border-line"
           aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
           aria-expanded={mobileOpen}
         >
@@ -85,20 +87,33 @@ export const Header: React.FC = () => {
       </div>
 
       {mobileOpen && (
-        <nav className="lg:hidden border-t border-line bg-paper-card px-4 py-3 space-y-1" aria-label="모바일 메뉴">
+        <nav className="lg:hidden border-t border-line bg-paper-card px-4 py-4 space-y-1.5 shadow-lg" aria-label="모바일 메뉴">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.tab}
               type="button"
               onClick={() => setActiveTab(item.tab)}
-              className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-base font-bold transition-colors ${
-                currentTop === item.tab ? 'text-primary-ink bg-primary-soft' : 'text-ink hover:bg-paper-soft'
+              className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-base font-extrabold transition-colors ${
+                currentTop === item.tab ? 'text-primary-ink bg-primary-soft font-black' : 'text-ink hover:bg-paper-soft'
               }`}
             >
               <span>{item.label}</span>
               <ChevronRight className="w-4 h-4 opacity-50" />
             </button>
           ))}
+
+          <div className="pt-3 border-t border-line mt-3">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                setActiveTab('contact');
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-primary text-primary-ink text-sm font-extrabold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-90"
+            >
+              <span>문의하기</span>
+            </button>
+          </div>
         </nav>
       )}
     </header>

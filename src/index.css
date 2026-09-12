@@ -58,3 +58,18 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* 협력기관 마퀴 (PartnersPreviewSection.tsx) — 기본 목록을 정확히 2배로
+   이어붙인 트랙을 -50% 만큼 이동시켜 이음매 없이 반복되도록 합니다. */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-scroll 32s linear infinite;
+}
+.marquee-viewport {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}

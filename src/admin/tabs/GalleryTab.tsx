@@ -4,6 +4,7 @@ import { validateImageFile } from '../../utils/uploadValidation';
 import { uploadImageBlob } from '../../utils/uploadToStorage';
 import { GalleryItem } from '../../types';
 import { Plus, Trash2, Pencil, X, Save, Loader2, Image as ImageIcon, Tag } from 'lucide-react';
+import { getGalleryPhoto } from '../../utils/galleryPhoto';
 
 const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary';
 
@@ -156,21 +157,24 @@ export const GalleryTab: React.FC = () => {
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {[...gallery].sort((a, b) => (a.date < b.date ? 1 : -1)).map((item) => (
-          <div key={item.id} className="bg-paper-card border border-line rounded-2xl overflow-hidden">
-            <div className="aspect-[4/3] bg-paper-soft">
-              {item.imageUrl && <img src={getImageUrl(item.imageUrl)} alt={item.title} className="w-full h-full object-cover" />}
-            </div>
-            <div className="p-3 space-y-1.5">
-              <p className="text-[11px] font-bold text-secondary-ink">{item.category}</p>
-              <p className="text-xs font-bold text-ink truncate">{item.title}</p>
-              <div className="flex items-center gap-1.5 pt-1">
-                <button onClick={() => startEdit(item)} className="flex-1 py-1.5 text-[11px] font-bold text-ink-soft hover:text-ink bg-paper-soft rounded-lg">수정</button>
-                <button onClick={() => confirm(`'${item.title}'을(를) 삭제할까요?`) && deleteGallery(item.id)} className="flex-1 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-50 bg-paper-soft rounded-lg">삭제</button>
+        {[...gallery].sort((a, b) => (a.date < b.date ? 1 : -1)).map((item) => {
+          const photo = getGalleryPhoto(item, getImageUrl);
+          return (
+            <div key={item.id} className="bg-paper-card border border-line rounded-2xl overflow-hidden">
+              <div className="aspect-[4/3] bg-paper-soft">
+                <img src={photo} alt={item.title} className="w-full h-full object-cover" />
+              </div>
+              <div className="p-3 space-y-1.5">
+                <p className="text-[11px] font-bold text-secondary-ink">{item.category}</p>
+                <p className="text-xs font-bold text-ink truncate">{item.title}</p>
+                <div className="flex items-center gap-1.5 pt-1">
+                  <button onClick={() => startEdit(item)} className="flex-1 py-1.5 text-[11px] font-bold text-ink-soft hover:text-ink bg-paper-soft rounded-lg">수정</button>
+                  <button onClick={() => confirm(`'${item.title}'을(를) 삭제할까요?`) && deleteGallery(item.id)} className="flex-1 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-50 bg-paper-soft rounded-lg">삭제</button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {gallery.length === 0 && <p className="text-sm text-ink-soft py-8 text-center col-span-full">등록된 사진이 없습니다.</p>}
       </div>
     </div>

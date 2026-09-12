@@ -11,6 +11,12 @@
  *
  * 반드시 Cloud Storage에 실제 파일을 업로드하고, Firestore에는
  * 다운로드 URL(수십~수백 바이트 문자열)만 저장해야 한다.
+ *
+ * ⚠️ 이 파일에는 "Firebase Storage 업로드 실패 시 서버(/api/upload)나
+ * data URL로 대신 저장하는" 폴백을 추가하지 말 것. 그런 폴백은 위 경고를
+ * 그대로 무력화하며(다시 base64가 Firestore에 들어감), 인증되지 않은
+ * 업로드 엔드포인트를 만드는 결과로도 이어진다. 업로드가 실패하면 에러를
+ * 그대로 상위로 전달해 관리자 화면에 실패로 표시되게 한다.
  */
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../lib/firebase';
@@ -35,9 +41,9 @@ export async function uploadImageBlob(
   const fileName = generateFileName(originalName);
   const storageRef = ref(storage, `${folder}/${fileName}`);
   const snapshot = await uploadBytes(storageRef, blob, {
-    contentType: blob.type || 'image/jpeg'
+    contentType: blob.type || 'image/jpeg',
   });
-  return getDownloadURL(snapshot.ref);
+  return await getDownloadURL(snapshot.ref);
 }
 
 /**
@@ -50,9 +56,9 @@ export async function uploadRawFile(file: File, folder: string): Promise<string>
   const fileName = generateFileName(file.name);
   const storageRef = ref(storage, `${folder}/${fileName}`);
   const snapshot = await uploadBytes(storageRef, file, {
-    contentType: file.type || 'application/octet-stream'
+    contentType: file.type || 'application/octet-stream',
   });
-  return getDownloadURL(snapshot.ref);
+  return await getDownloadURL(snapshot.ref);
 }
 
 /**

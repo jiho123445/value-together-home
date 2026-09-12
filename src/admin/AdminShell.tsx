@@ -24,7 +24,7 @@ type AdminTab =
   | 'partners' | 'popups' | 'participations' | 'inquiries' | 'logs';
 
 export const AdminShell: React.FC = () => {
-  const { setAdminOpen, pendingParticipationsCount, pendingInquiriesCount } = useValueTogether();
+  const { setAdminOpen, logoutAdmin, pendingParticipationsCount, pendingInquiriesCount } = useValueTogether();
   const [tab, setTab] = useState<AdminTab>('dashboard');
   const [navOpen, setNavOpen] = useState(false);
 
@@ -79,7 +79,7 @@ export const AdminShell: React.FC = () => {
           <button onClick={() => setAdminOpen(false)} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
             <ExternalLink className="w-4 h-4" /> 사이트로 돌아가기
           </button>
-          <button onClick={() => signOut(auth)} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
+          <button onClick={() => logoutAdmin()} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
             <LogOut className="w-4 h-4" /> 로그아웃
           </button>
         </div>
@@ -103,7 +103,7 @@ export const AdminShell: React.FC = () => {
             <button onClick={() => setAdminOpen(false)} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
               <ExternalLink className="w-4 h-4" /> 사이트로 돌아가기
             </button>
-            <button onClick={() => signOut(auth)} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
+            <button onClick={() => logoutAdmin()} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
               <LogOut className="w-4 h-4" /> 로그아웃
             </button>
           </div>

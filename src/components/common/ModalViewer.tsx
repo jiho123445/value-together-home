@@ -5,6 +5,7 @@ import { isAttachmentPreviewable } from '../../utils/attachmentPreview';
 import { AttachmentPreviewModal } from './AttachmentPreviewModal';
 import { GalleryItem, NoticeAttachment } from '../../types';
 import { X, Calendar, Eye, MapPin, CheckCircle2, HeartHandshake, Download, Paperclip, ChevronLeft, ChevronRight, Image as ImageIcon, Layers } from 'lucide-react';
+import { getGalleryPhoto } from '../../utils/galleryPhoto';
 
 interface GalleryModalProps {
   item: GalleryItem;
@@ -13,7 +14,8 @@ interface GalleryModalProps {
 }
 
 const GalleryModalContent: React.FC<GalleryModalProps> = ({ item, onClose, getImageUrl }) => {
-  const allImages = item.images && item.images.length > 0 ? item.images : item.imageUrl ? [item.imageUrl] : [];
+  const rawImages = item.images && item.images.length > 0 ? item.images : item.imageUrl ? [item.imageUrl] : [];
+  const allImages = rawImages.length > 0 ? rawImages : [getGalleryPhoto(item, getImageUrl)];
   const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
@@ -26,13 +28,14 @@ const GalleryModalContent: React.FC<GalleryModalProps> = ({ item, onClose, getIm
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [allImages.length, onClose]);
 
-  const activePhotoUrl = allImages[activeIdx] || item.imageUrl;
+  const rawTarget = allImages[activeIdx] || item.imageUrl;
+  const activePhotoUrl = rawTarget ? getImageUrl(rawTarget) : getGalleryPhoto(item, getImageUrl);
 
   return (
     <div className="fixed inset-0 z-50 bg-ink/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-paper-card rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         <div className="relative bg-ink flex items-center justify-center min-h-[300px] max-h-[55vh] overflow-hidden select-none">
-          <img src={getImageUrl(activePhotoUrl)} alt={`${item.title} - 사진 ${activeIdx + 1}`} className="w-full h-full object-contain max-h-[55vh]" />
+          <img src={activePhotoUrl} alt={`${item.title} - 사진 ${activeIdx + 1}`} className="w-full h-full object-contain max-h-[55vh]" />
           <button onClick={onClose} className="absolute top-4 right-4 p-2.5 text-white bg-black/60 hover:bg-black/80 rounded-full shadow-lg transition-all z-20">
             <X className="w-5 h-5" />
           </button>

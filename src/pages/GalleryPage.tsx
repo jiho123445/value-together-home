@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useValueTogether } from '../context/ValueTogetherContext';
 import { PageBanner } from '../components/common/PageBanner';
 import { Pagination } from '../components/common/Pagination';
-import { Image as ImageIcon, Layers } from 'lucide-react';
+import { Layers } from 'lucide-react';
+import { getGalleryPhoto } from '../utils/galleryPhoto';
 
 const PAGE_SIZE = 12;
 
@@ -45,34 +46,36 @@ export const GalleryPage: React.FC = () => {
           <p className="text-sm text-ink-soft py-16 text-center">등록된 사진이 없습니다.</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-            {pageItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => viewGalleryDetail(item)}
-                className="group text-left rounded-2xl overflow-hidden border border-line bg-paper-card"
-              >
-                <div className="aspect-[4/3] bg-paper-soft overflow-hidden relative">
-                  {item.imageUrl ? (
-                    <img src={getImageUrl(item.imageUrl)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-ink-soft/40">
-                      <ImageIcon className="w-8 h-8" />
-                    </div>
-                  )}
-                  {item.images && item.images.length > 1 && (
-                    <span className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                      <Layers className="w-3 h-3" /> {item.images.length}
-                    </span>
-                  )}
-                </div>
-                <div className="p-3 space-y-0.5">
-                  <p className="text-[11px] font-bold text-secondary-ink">{item.category}</p>
-                  <p className="text-xs font-bold text-ink truncate">{item.title}</p>
-                  <p className="text-[11px] text-ink-soft">{item.date}</p>
-                </div>
-              </button>
-            ))}
+            {pageItems.map((item) => {
+              const photoSrc = getGalleryPhoto(item, getImageUrl);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => viewGalleryDetail(item)}
+                  className="group text-left rounded-2xl overflow-hidden border border-line bg-paper-card shadow-sm hover:border-primary/50 hover:shadow-md transition-all"
+                >
+                  <div className="aspect-[4/3] bg-paper-soft overflow-hidden relative">
+                    <img
+                      src={photoSrc}
+                      alt={item.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {item.images && item.images.length > 1 && (
+                      <span className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                        <Layers className="w-3 h-3" /> {item.images.length}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3 space-y-0.5">
+                    <p className="text-[11px] font-bold text-secondary-ink">{item.category}</p>
+                    <p className="text-xs font-bold text-ink truncate">{item.title}</p>
+                    <p className="text-[11px] text-ink-soft">{item.date}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { doc, onSnapshot, setDoc, getDocs, deleteDoc, collection, addDoc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db, storage } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestoreService';
 import {
@@ -86,6 +86,7 @@ interface ValueTogetherContextType {
   adminOpen: boolean;
   setAdminOpen: (open: boolean) => void;
   isAdmin: boolean;
+  logoutAdmin: () => Promise<void>;
 
   logPageview: (path: string) => void;
   refreshData: () => Promise<void>;
@@ -177,17 +178,20 @@ const buildPath = (state: {
   return `/${tab}`;
 };
 
-const parsePath = (pathname: string, search: string) => {
+interface ParsedPath {
+  tab: ActiveTab;
+  aboutSubTab?: AboutSubTab;
+  noticeCategory?: string;
+  noticeId?: string;
+  programId?: string;
+  galleryId?: string;
+  adminOpen?: boolean;
+}
+
+const parsePath = (pathname: string, search: string): ParsedPath => {
   const clean = (pathname || '/').trim();
   const params = new URLSearchParams(search || '');
-  const res: {
-    tab: ActiveTab;
-    aboutSubTab?: AboutSubTab;
-    noticeCategory?: string;
-    noticeId?: string;
-    programId?: string;
-    galleryId?: string;
-  } = { tab: 'main' as ActiveTab };
+  const res: ParsedPath = { tab: 'main' };
 
   const noticeMatch = clean.match(/^\/news\/([^/]+)\/?$/);
   const programMatch = clean.match(/^\/business\/([^/]+)\/?$/);
@@ -211,6 +215,9 @@ const parsePath = (pathname: string, search: string) => {
 
   const validTabs: ActiveTab[] = ['main', 'about', 'business', 'news', 'gallery', 'partners', 'contact', 'privacy', 'terms'];
   const tabPart = clean.replace(/^\//, '').replace(/\/$/, '');
+  if (tabPart === 'admin') {
+    return { ...res, tab: 'main', adminOpen: true };
+  }
   res.tab = validTabs.includes(tabPart as ActiveTab) ? (tabPart as ActiveTab) : ('main' as ActiveTab);
 
   if (params.get('sub')) res.aboutSubTab = params.get('sub') as AboutSubTab;
@@ -337,12 +344,23 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   const [activeTab, setActiveTabState] = useState<ActiveTab>(initialParsed.tab || 'main');
   const [aboutSubTab, setAboutSubTab] = useState<AboutSubTab>(initialParsed.aboutSubTab || 'greeting');
   const [noticeCategory, setNoticeCategory] = useState<string>(initialParsed.noticeCategory || '전체');
-  const [adminOpen, setAdminOpen] = useState<boolean>(false);
+  const [adminOpen, setAdminOpen] = useState<boolean>((initialParsed as any).adminOpen || false);
 
-  // Administrator status is derived exclusively from Firebase Authentication
-  // — never persisted as an independent client-side flag (sessionStorage is
-  // not an authorization boundary and can be edited by the visitor).
+  // 관리자 여부는 오직 Firebase Authentication 상태로만 판단합니다.
+  // sessionStorage/localStorage 등 클라이언트가 임의로 조작할 수 있는 값은
+  // 절대 권한 판단에 사용하지 않습니다 — 실제 접근 제어는 firestore.rules /
+  // storage.rules의 isAdmin()이 담당하며, 이 값은 UI 표시용 편의 상태일
+  // 뿐입니다.
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+  const logoutAdmin = useCallback(async () => {
+    try {
+      await signOut(auth);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   useEffect(() => {
     const ADMIN_UID = String(import.meta.env.VITE_ADMIN_UID || '').trim();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -1006,6 +1024,7 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         adminOpen,
         setAdminOpen,
         isAdmin,
+        logoutAdmin,
 
         logPageview,
         refreshData,

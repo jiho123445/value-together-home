@@ -3,7 +3,7 @@ import { useValueTogether } from '../../context/ValueTogetherContext';
 import { ArrowRight, HeartHandshake } from 'lucide-react';
 
 export const Hero: React.FC = () => {
-  const { settings, setActiveTab, getImageUrl } = useValueTogether();
+  const { settings, setActiveTab, getImageUrl, programs, partners } = useValueTogether();
 
   return (
     <section className="relative bg-paper overflow-hidden">
@@ -16,9 +16,9 @@ export const Hero: React.FC = () => {
         }}
         aria-hidden="true"
       />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-16 sm:pt-20 sm:pb-24 relative grid lg:grid-cols-2 gap-10 items-center">
-        <div className="space-y-6">
-          <span className="inline-flex items-center gap-1.5 text-sm font-bold text-secondary-ink bg-secondary-soft px-4 py-2 rounded-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 relative grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-6 items-stretch">
+        <div className="space-y-6 flex flex-col justify-center py-2">
+          <span className="inline-flex items-center gap-1.5 text-sm font-bold text-secondary-ink bg-secondary-soft px-4 py-2 rounded-full w-fit">
             <HeartHandshake className="w-4 h-4" />
             사회적협동조합 가치함께
           </span>
@@ -45,16 +45,32 @@ export const Hero: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative">
-          <div className="aspect-[4/3] rounded-[2rem] bg-secondary-soft border border-line overflow-hidden shadow-sm">
+        <div className="relative min-h-[320px] sm:min-h-[420px] lg:min-h-0">
+          <div className="absolute inset-0 lg:rounded-l-[2.5rem] rounded-[2rem] lg:rounded-r-none overflow-hidden bg-secondary-soft border border-line shadow-sm">
             {settings.heroImageUrl ? (
-              <img src={getImageUrl(settings.heroImageUrl)} alt={settings.name} className="w-full h-full object-cover" />
+              <img
+                src={getImageUrl(settings.heroImageUrl)}
+                alt={settings.name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-secondary-ink/60">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-secondary-ink/60">
                 <HeartHandshake className="w-12 h-12" />
                 <span className="text-xs font-bold">대표 이미지 — 관리자 설정에서 등록해 주세요</span>
               </div>
             )}
+          </div>
+
+          <div className="absolute left-4 sm:left-8 lg:-left-8 bottom-6 sm:bottom-10 z-10 bg-paper-card/95 backdrop-blur-sm border border-line rounded-2xl shadow-lg px-5 py-4 sm:px-6 sm:py-5 flex items-center gap-5 sm:gap-6">
+            <div className="text-center">
+              <p className="font-display font-black text-2xl sm:text-3xl text-primary-ink tabular-nums">{programs.length}</p>
+              <p className="text-[11px] sm:text-xs font-bold text-ink-soft mt-0.5">주요사업</p>
+            </div>
+            <div className="w-px h-9 sm:h-10 bg-line" />
+            <div className="text-center">
+              <p className="font-display font-black text-2xl sm:text-3xl text-secondary-ink tabular-nums">{partners.length}</p>
+              <p className="text-[11px] sm:text-xs font-bold text-ink-soft mt-0.5">협력기관</p>
+            </div>
           </div>
         </div>
       </div>

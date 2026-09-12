@@ -1,7 +1,7 @@
 import React from 'react';
 import { useValueTogether } from '../context/ValueTogetherContext';
-import * as Icons from 'lucide-react';
-import { ChevronLeft, CheckCircle2, HeartHandshake, Briefcase } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, HeartHandshake } from 'lucide-react';
+import { getProgramPhoto } from '../utils/programPhoto';
 
 export const ProgramDetailPage: React.FC = () => {
   const { selectedProgram, goBackFromDetail, setActiveTab, getImageUrl } = useValueTogether();
@@ -18,7 +18,7 @@ export const ProgramDetailPage: React.FC = () => {
   }
 
   const program = selectedProgram;
-  const IconComp = (Icons as any)[program.iconName] || Briefcase;
+  const photoSrc = getProgramPhoto(program, getImageUrl);
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
@@ -26,17 +26,20 @@ export const ProgramDetailPage: React.FC = () => {
         <ChevronLeft className="w-4 h-4" /> 목록으로
       </button>
 
-      {program.imageUrl && (
-        <div className="aspect-video rounded-2xl overflow-hidden border border-line mb-8">
-          <img src={getImageUrl(program.imageUrl)} alt={program.title} className="w-full h-full object-cover" />
-        </div>
-      )}
+      <div className="aspect-video rounded-3xl overflow-hidden border-2 border-line/80 shadow-sm mb-8 bg-paper-soft">
+        <img src={photoSrc} alt={program.title} className="w-full h-full object-cover" />
+      </div>
 
       <article className="space-y-6">
         <header className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary-soft text-primary-ink flex items-center justify-center shrink-0">
-              <IconComp className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm border-2 border-primary/25 bg-paper-soft shrink-0">
+              <img
+                src={photoSrc}
+                alt={program.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-xs font-bold text-primary-ink bg-primary-soft px-3 py-1 rounded-full">사업 {program.code} · {program.category}</span>
           </div>
@@ -44,7 +47,7 @@ export const ProgramDetailPage: React.FC = () => {
           <p className="text-sm text-ink-soft italic">&ldquo;{program.subtitle}&rdquo;</p>
         </header>
 
-        <p className="text-sm text-ink leading-relaxed whitespace-pre-line">{program.summary}</p>
+        <p className="text-sm font-bold text-ink/90 leading-relaxed whitespace-pre-line">{program.summary}</p>
 
         <div className="bg-secondary-soft p-5 rounded-2xl text-sm text-secondary-ink font-medium">{program.impactMessage}</div>
 

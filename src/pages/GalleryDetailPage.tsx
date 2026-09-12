@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useValueTogether } from '../context/ValueTogetherContext';
 import { ChevronLeft, ChevronRight, Calendar, MapPin, Layers, Image as ImageIcon } from 'lucide-react';
+import { getGalleryPhoto } from '../utils/galleryPhoto';
 
 export const GalleryDetailPage: React.FC = () => {
   const { selectedGallery, goBackFromDetail, setActiveTab, getImageUrl } = useValueTogether();
   const [activeIdx, setActiveIdx] = useState(0);
 
-  const allImages = selectedGallery
+  const rawImages = selectedGallery
     ? selectedGallery.images && selectedGallery.images.length > 0
       ? selectedGallery.images
       : selectedGallery.imageUrl
         ? [selectedGallery.imageUrl]
         : []
     : [];
+
+  const allImages = rawImages.length > 0
+    ? rawImages
+    : selectedGallery
+      ? [getGalleryPhoto(selectedGallery, getImageUrl)]
+      : [];
 
   useEffect(() => {
     setActiveIdx(0);
@@ -39,7 +46,8 @@ export const GalleryDetailPage: React.FC = () => {
   }
 
   const item = selectedGallery;
-  const activePhotoUrl = allImages[activeIdx] || item.imageUrl;
+  const rawTarget = allImages[activeIdx] || item.imageUrl;
+  const activePhotoUrl = rawTarget ? getImageUrl(rawTarget) : getGalleryPhoto(item, getImageUrl);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">

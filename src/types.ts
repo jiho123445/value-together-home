@@ -22,6 +22,8 @@ export interface CoreValue {
   description: string;
   /** components/icons/CoreValueIcon.tsx 에 정의된 아이콘 키 */
   icon: 'people' | 'together' | 'community' | 'sustainability';
+  /** 핵심가치 대표 실사 이미지 URL */
+  imageUrl?: string;
 }
 
 export interface OperatingPrinciple {

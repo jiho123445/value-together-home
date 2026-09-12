@@ -2,13 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { useValueTogether } from '../context/ValueTogetherContext';
 import { PageBanner } from '../components/common/PageBanner';
 import { ProgramCategory } from '../types';
-import * as Icons from 'lucide-react';
-import { Briefcase } from 'lucide-react';
+import { getProgramPhoto } from '../utils/programPhoto';
 
 const CATEGORIES: (ProgramCategory | '전체')[] = ['전체', '사회서비스', '교육사업', '지역사회사업', '돌봄복지사업', '일자리자립지원', '기타사업'];
 
 export const BusinessPage: React.FC = () => {
-  const { programs, viewProgramDetail } = useValueTogether();
+  const { programs, viewProgramDetail, getImageUrl } = useValueTogether();
   const [category, setCategory] = useState<(ProgramCategory | '전체')>('전체');
 
   const filtered = useMemo(() => {
@@ -41,23 +40,28 @@ export const BusinessPage: React.FC = () => {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((program) => {
-              const IconComp = (Icons as any)[program.iconName] || Briefcase;
+              const imgSrc = getProgramPhoto(program, getImageUrl);
               return (
                 <button
                   key={program.id}
                   type="button"
                   onClick={() => viewProgramDetail(program)}
-                  className="text-left bg-paper-card border border-line rounded-2xl p-6 space-y-3.5 hover:border-primary hover:shadow-md transition-all"
+                  className="text-left bg-paper-card border border-line rounded-2xl p-6 space-y-3.5 hover:border-primary hover:shadow-md transition-all group"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="w-11 h-11 rounded-xl bg-primary-soft text-primary-ink flex items-center justify-center">
-                      <IconComp className="w-5 h-5" />
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shadow-md border-2 border-primary/25 bg-paper-soft shrink-0 group-hover:scale-105 transition-transform duration-300">
+                      <img
+                        src={imgSrc}
+                        alt={program.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <span className="text-xs font-bold text-ink-soft/60">{program.code}</span>
+                    <span className="text-xs sm:text-sm font-black text-ink-soft/60 font-mono tracking-wider">사업 {program.code}</span>
                   </div>
                   <span className="inline-block text-[11px] font-bold text-secondary-ink bg-secondary-soft px-2.5 py-1 rounded-full">{program.category}</span>
                   <h3 className="font-bold text-ink text-base leading-snug">{program.title}</h3>
-                  <p className="text-xs text-ink-soft leading-relaxed line-clamp-2">{program.summary}</p>
+                  <p className="text-xs sm:text-sm font-bold text-ink/90 leading-relaxed line-clamp-2">{program.summary}</p>
                 </button>
               );
             })}

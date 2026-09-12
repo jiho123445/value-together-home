@@ -77,7 +77,25 @@ export const SettingsTab: React.FC = () => {
         </div>
         <Field label="메인 슬로건 (제목)"><input className={inputCls} value={form.sloganMain} onChange={(e) => set('sloganMain', e.target.value)} /></Field>
         <Field label="메인 슬로건 (부제)"><textarea className={inputCls} rows={2} value={form.sloganSub} onChange={(e) => set('sloganSub', e.target.value)} /></Field>
-        <ImageUploadField label="메인(Hero) 이미지" value={form.heroImageUrl} onChange={(url) => set('heroImageUrl', url)} folder="settings" getImageUrl={getImageUrl} />
+        
+        <div className="pt-3 border-t border-line/70 space-y-2">
+          <div>
+            <span className="text-xs font-bold text-ink flex items-center gap-1.5">
+              인덱스(메인) 페이지 대표 배너 이미지
+              <span className="text-[11px] font-normal text-secondary-ink">(Hero 메인 비주얼)</span>
+            </span>
+            <p className="text-[11px] text-ink-soft mt-0.5">
+              홈페이지 첫 화면 최상단에 노출되는 대표 배너 이미지입니다. 원하는 사진을 업로드하거나 교체/삭제할 수 있으며, 저장 시 인덱스 페이지에 즉시 적용됩니다.
+            </p>
+          </div>
+          <ImageUploadField
+            label="배너 이미지 업로드 / 변경"
+            value={form.heroImageUrl}
+            onChange={(url) => set('heroImageUrl', url)}
+            folder="settings"
+            getImageUrl={getImageUrl}
+          />
+        </div>
       </SectionCard>
 
       <SectionCard title="대표자 인사말" saved={savedSection === 'greeting'} onSave={saveGreeting}>
@@ -131,18 +149,59 @@ export const SettingsTab: React.FC = () => {
         />
       </SectionCard>
 
-      <SectionCard title="핵심가치 4카드" description="메인 페이지 상단에 노출되는 핵심가치 카드입니다." saved={savedSection === 'core'} onSave={saveCoreValues}>
-        {form.coreValues.map((cv, idx) => (
-          <div key={cv.id} className="grid sm:grid-cols-[100px_1fr_2fr] gap-2 items-start bg-paper rounded-xl p-3 border border-line">
-            <span className="text-xs font-bold text-ink-soft pt-2.5">{cv.icon}</span>
-            <input className={inputCls} value={cv.title} onChange={(e) => {
-              const next = [...form.coreValues]; next[idx] = { ...cv, title: e.target.value }; set('coreValues', next);
-            }} />
-            <input className={inputCls} value={cv.description} onChange={(e) => {
-              const next = [...form.coreValues]; next[idx] = { ...cv, description: e.target.value }; set('coreValues', next);
-            }} />
-          </div>
-        ))}
+      <SectionCard title="핵심가치 4카드 (실사 이미지 및 설명)" description="메인 페이지 상단에 노출되는 핵심가치 4대 카드의 대표 실사 이미지, 제목, 설명을 관리합니다." saved={savedSection === 'core'} onSave={saveCoreValues}>
+        <div className="space-y-4">
+          {form.coreValues.map((cv, idx) => (
+            <div key={cv.id} className="bg-paper rounded-2xl p-4 border border-line space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-primary-ink bg-primary-soft px-2.5 py-1 rounded-md uppercase">
+                  {cv.icon}
+                </span>
+                <span className="text-xs text-ink-soft font-medium">카드 #{idx + 1}</span>
+              </div>
+              <div className="grid sm:grid-cols-[1fr_2fr] gap-3">
+                <div>
+                  <label className="text-xs font-bold text-ink mb-1 block">카드 제목 (예: 사람, 함께 등)</label>
+                  <input
+                    className={inputCls}
+                    value={cv.title}
+                    onChange={(e) => {
+                      const next = [...form.coreValues];
+                      next[idx] = { ...cv, title: e.target.value };
+                      set('coreValues', next);
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-ink mb-1 block">사업 설명 문구</label>
+                  <input
+                    className={inputCls}
+                    value={cv.description}
+                    onChange={(e) => {
+                      const next = [...form.coreValues];
+                      next[idx] = { ...cv, description: e.target.value };
+                      set('coreValues', next);
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <ImageUploadField
+                  label="카드 대표 실사 사진 (미등록 시 기본 감성 실사 사진 자동 적용)"
+                  value={cv.imageUrl || ''}
+                  onChange={(url) => {
+                    const next = [...form.coreValues];
+                    next[idx] = { ...cv, imageUrl: url };
+                    set('coreValues', next);
+                  }}
+                  folder="core-values"
+                  aspect="aspect-square"
+                  getImageUrl={getImageUrl}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </SectionCard>
 
       <SectionCard title="운영원칙" saved={savedSection === 'principles'} onSave={savePrinciples}>

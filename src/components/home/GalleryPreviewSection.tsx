@@ -1,11 +1,47 @@
 import React from 'react';
 import { useValueTogether } from '../../context/ValueTogetherContext';
-import { ArrowRight, Image as ImageIcon } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { getGalleryPhoto } from '../../utils/galleryPhoto';
+import { GalleryItem } from '../../types';
+
+interface GalleryTileProps {
+  item: GalleryItem;
+  aspect: string;
+  textSize: string;
+  onOpen: (item: GalleryItem) => void;
+  getImageUrl: (url?: string) => string;
+}
+
+const GalleryTile: React.FC<GalleryTileProps> = ({ item, aspect, textSize, onOpen, getImageUrl }) => {
+  const photoSrc = getGalleryPhoto(item, getImageUrl);
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(item)}
+      className={`group relative rounded-2xl overflow-hidden text-left shadow-sm hover:shadow-lg transition-shadow ${aspect}`}
+    >
+      <img
+        src={photoSrc}
+        alt={item.title}
+        referrerPolicy="no-referrer"
+        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
+      <div className="relative h-full flex flex-col justify-end p-3.5 sm:p-4 space-y-0.5">
+        <p className="text-[11px] sm:text-xs font-bold text-white/75">{item.category}</p>
+        <p className={`font-bold text-white truncate ${textSize}`}>{item.title}</p>
+      </div>
+    </button>
+  );
+};
 
 export const GalleryPreviewSection: React.FC = () => {
   const { gallery, viewGalleryDetail, setActiveTab, getImageUrl } = useValueTogether();
-  const list = [...gallery].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 4);
+  const list = [...gallery].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 5);
   if (list.length === 0) return null;
+
+  const [feature, ...rest] = list;
+  const restItems = rest.slice(0, 4);
 
   return (
     <section className="py-14 sm:py-20 bg-paper">
@@ -20,32 +56,14 @@ export const GalleryPreviewSection: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {list.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => viewGalleryDetail(item)}
-              className="group text-left rounded-2xl overflow-hidden border border-line bg-paper-card"
-            >
-              <div className="aspect-[4/3] bg-paper-soft overflow-hidden relative">
-                {item.imageUrl ? (
-                  <img
-                    src={getImageUrl(item.imageUrl)}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-ink-soft/40">
-                    <ImageIcon className="w-8 h-8" />
-                  </div>
-                )}
-              </div>
-              <div className="p-3 space-y-0.5">
-                <p className="text-xs font-bold text-secondary-ink">{item.category}</p>
-                <p className="text-sm font-bold text-ink truncate">{item.title}</p>
-              </div>
-            </button>
+        <div className="grid grid-cols-2 sm:grid-cols-4 sm:grid-rows-2 gap-3 sm:gap-4 sm:h-[480px] lg:h-[560px]">
+          <div className="col-span-2 sm:row-span-2">
+            <GalleryTile item={feature} aspect="aspect-video sm:aspect-auto sm:h-full" textSize="text-base sm:text-lg" onOpen={viewGalleryDetail} getImageUrl={getImageUrl} />
+          </div>
+          {restItems.map((item) => (
+            <div key={item.id} className="col-span-1">
+              <GalleryTile item={item} aspect="aspect-square sm:aspect-auto sm:h-full" textSize="text-sm" onOpen={viewGalleryDetail} getImageUrl={getImageUrl} />
+            </div>
           ))}
         </div>
       </div>
