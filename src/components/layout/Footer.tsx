@@ -16,8 +16,8 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-ink text-white/70 mt-auto">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16 space-y-10">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10">
-          <div className="space-y-4 max-w-md">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="space-y-4">
             <Logo size="footer" className="[&_span]:text-white [&_span.text-secondary-ink]:text-white/50" />
             <p className="text-sm sm:text-base leading-relaxed text-white/60">{settings.sloganSub}</p>
             <div className="flex items-center gap-3 pt-1">
@@ -39,21 +39,20 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-10 gap-y-4 text-sm sm:text-base">
-            <div className="space-y-2">
-              <p className="text-white font-bold text-base sm:text-lg mb-1.5">단체 정보</p>
-              <p>{settings.name}</p>
-              {settings.representativeName && <p>대표: {settings.representativeName}</p>}
-              {settings.businessRegistrationNumber && <p>사업자등록번호: {settings.businessRegistrationNumber}</p>}
-              <p>{settings.address}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-white font-bold text-base sm:text-lg mb-1.5">연락처</p>
-              {settings.phone && <p>전화: {settings.phone}</p>}
-              {settings.fax && <p>팩스: {settings.fax}</p>}
-              {settings.email && <p>이메일: {settings.email}</p>}
-              <p>{settings.operatingHours}</p>
-            </div>
+          <div className="space-y-2 text-sm sm:text-base">
+            <p className="text-white font-bold text-base sm:text-lg mb-1.5">단체 정보</p>
+            <p>{settings.name}</p>
+            {settings.representativeName && <p>대표: {settings.representativeName}</p>}
+            {settings.businessRegistrationNumber && <p>사업자등록번호: {settings.businessRegistrationNumber}</p>}
+            <p>{settings.address}</p>
+          </div>
+
+          <div className="space-y-2 text-sm sm:text-base">
+            <p className="text-white font-bold text-base sm:text-lg mb-1.5">연락처</p>
+            {settings.phone && <p>전화: {settings.phone}</p>}
+            {settings.fax && <p>팩스: {settings.fax}</p>}
+            {settings.email && <p>이메일: {settings.email}</p>}
+            <p className="whitespace-nowrap">{settings.operatingHours}</p>
           </div>
         </div>
 
