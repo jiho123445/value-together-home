@@ -96,7 +96,7 @@ export const GalleryDetailPage: React.FC = () => {
                   activeIdx === idx ? 'border-primary scale-105' : 'border-white/20 opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={getImageUrl(imgUrl)} alt={`썸네일 ${idx + 1}`} className="w-full h-full object-cover" />
+                <img src={getImageUrl(imgUrl)} alt={`썸네일 ${idx + 1}`} loading="lazy" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

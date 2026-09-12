@@ -24,6 +24,7 @@ const GalleryTile: React.FC<GalleryTileProps> = ({ item, aspect, textSize, onOpe
         src={photoSrc}
         alt={item.title}
         referrerPolicy="no-referrer"
+        loading="lazy"
         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />

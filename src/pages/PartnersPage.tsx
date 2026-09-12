@@ -81,7 +81,7 @@ export const PartnersPage: React.FC = () => {
               {partners.map((partner) => (
                 <div key={partner.id} className="bg-paper-card border border-line rounded-2xl p-5 flex items-center gap-4">
                   {partner.logoUrl ? (
-                    <img src={getImageUrl(partner.logoUrl)} alt={partner.name} className="w-12 h-12 object-contain shrink-0" />
+                    <img src={getImageUrl(partner.logoUrl)} alt={partner.name} loading="lazy" className="w-12 h-12 object-contain shrink-0" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-paper-soft shrink-0" />
                   )}
@@ -136,27 +136,27 @@ export const PartnersPage: React.FC = () => {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-ink">이름 *</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                  <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-ink">연락처 *</label>
-                  <input value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="010-0000-0000" className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                  <input value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="010-0000-0000" className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-ink">이메일</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
                 </div>
                 {type === '기관협력' && (
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-ink">소속 기관명</label>
-                    <input value={organization} onChange={(e) => setOrganization(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                    <input value={organization} onChange={(e) => setOrganization(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
                   </div>
                 )}
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-ink">전하고 싶은 말씀</label>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary resize-none" />
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper resize-none" />
               </div>
 
               {/* 허니팟: 실제 방문자에게는 보이지 않지만 봇은 채우는 필드 */}

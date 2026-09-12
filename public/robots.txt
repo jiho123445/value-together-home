@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 
-# 실제 도메인이 정해지면 아래 주석을 해제하고 도메인을 채워주세요.
-# scripts/generate-previews.mjs 도 SITE_ORIGIN 상수를 함께 업데이트해야
-# sitemap.xml에 올바른 절대경로 URL이 생성됩니다.
-# Sitemap: https://YOUR-DOMAIN/sitemap.xml
+# 커스텀 도메인을 새로 연결하면 아래 주소와 scripts/generate-previews.mjs의
+# SITE_ORIGIN 상수를 함께 업데이트하세요.
+Sitemap: https://value-together-home-gray.vercel.app/sitemap.xml

@@ -19,6 +19,7 @@ import { TermsPage } from './pages/TermsPage';
 import { NoticeDetailPage } from './pages/NoticeDetailPage';
 import { ProgramDetailPage } from './pages/ProgramDetailPage';
 import { GalleryDetailPage } from './pages/GalleryDetailPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 // 관리자 화면은 방문자 번들에 전혀 포함되지 않도록 React.lazy로 완전히
 // 분리합니다 (관리자 UID 확인 → 로그인 화면 → 대시보드까지 전부 이 청크 안).
@@ -65,6 +66,8 @@ const SiteShell: React.FC = () => {
       page = <ProgramDetailPage />; break;
     case 'gallery-detail':
       page = <GalleryDetailPage />; break;
+    case 'not-found':
+      page = <NotFoundPage />; break;
     case 'main':
     default:
       page = <HomePage />; break;

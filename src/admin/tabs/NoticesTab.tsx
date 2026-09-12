@@ -6,7 +6,7 @@ import { NoticeCategory, NoticeItem, NoticeAttachment } from '../../types';
 import { Plus, Trash2, Pencil, X, Save, Paperclip, Loader2, Pin } from 'lucide-react';
 
 const CATEGORIES: NoticeCategory[] = ['공지사항', '사업소식', '모집공고', '보도자료', '자료실'];
-const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary';
+const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 
 type DraftNotice = Omit<NoticeItem, 'id' | 'views' | 'date'> & { date?: string };
 

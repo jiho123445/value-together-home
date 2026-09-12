@@ -41,7 +41,7 @@ export const AboutPage: React.FC = () => {
             <p className="text-base sm:text-lg text-ink leading-relaxed whitespace-pre-line">{settings.representativeGreeting}</p>
             <div className="flex items-center gap-3 pt-4 border-t border-line">
               {settings.representativeImageUrl && (
-                <img src={getImageUrl(settings.representativeImageUrl)} alt="" className="w-14 h-14 rounded-full object-cover" />
+                <img src={getImageUrl(settings.representativeImageUrl)} alt="" loading="lazy" className="w-14 h-14 rounded-full object-cover" />
               )}
               <div>
                 <p className="font-bold text-ink text-sm">{settings.representativeName}</p>

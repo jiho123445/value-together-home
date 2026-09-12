@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NoticeAttachment } from '../../types';
 import { downloadNoticeFile } from '../../utils/download';
 import { getAttachmentKind } from '../../utils/attachmentPreview';
 import { X, Download, ExternalLink, FileWarning } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface AttachmentPreviewModalProps {
   file: NoticeAttachment;
@@ -18,23 +19,20 @@ interface AttachmentPreviewModalProps {
  */
 export const AttachmentPreviewModal: React.FC<AttachmentPreviewModalProps> = ({ file, onClose }) => {
   const kind = getAttachmentKind(file);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose);
 
   return (
     <div className="fixed inset-0 z-[9998] bg-ink/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="attachment-preview-title"
         className="bg-paper-card rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-line shrink-0">
-          <span className="text-sm font-bold text-ink truncate" title={file.name}>
+          <span id="attachment-preview-title" className="text-sm font-bold text-ink truncate" title={file.name}>
             {file.name}
           </span>
           <button onClick={onClose} className="p-1.5 text-ink-soft hover:text-ink rounded-lg hover:bg-paper-soft shrink-0" aria-label="닫기">

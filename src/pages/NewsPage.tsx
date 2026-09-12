@@ -57,7 +57,7 @@ export const NewsPage: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="제목/내용 검색"
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-line bg-paper-card text-sm focus:outline-none focus:border-primary"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-line bg-paper-card text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
             />
           </div>
         </div>

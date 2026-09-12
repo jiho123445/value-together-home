@@ -35,6 +35,7 @@ export const ProgramsPreviewSection: React.FC = () => {
               src={spotlightImg}
               alt={spotlight.title}
               referrerPolicy="no-referrer"
+              loading="lazy"
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/25 to-transparent" />
@@ -58,7 +59,7 @@ export const ProgramsPreviewSection: React.FC = () => {
                   className="group flex items-center gap-4 py-4 sm:py-5 text-left hover:bg-paper-soft/50 transition-colors px-2 -mx-2 rounded-lg"
                 >
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border border-line bg-paper-soft group-hover:scale-105 transition-transform duration-300">
-                    <img src={imgSrc} alt={program.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                    <img src={imgSrc} alt={program.title} referrerPolicy="no-referrer" loading="lazy" className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <p className="text-xs font-bold text-secondary-ink">{program.category}</p>

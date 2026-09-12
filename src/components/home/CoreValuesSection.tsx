@@ -46,6 +46,7 @@ export const CoreValuesSection: React.FC = () => {
                     src={getImageUrl(imgSrc)}
                     alt={value.title}
                     referrerPolicy="no-referrer"
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 </div>

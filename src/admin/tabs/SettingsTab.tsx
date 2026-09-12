@@ -4,7 +4,7 @@ import { ImageUploadField } from '../components/ImageUploadField';
 import { OrgChartItem, OperatingPrinciple, BankAccount, TimelineItem } from '../../types';
 import { Plus, Trash2, Save, CheckCircle2 } from 'lucide-react';
 
-const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary';
+const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 const labelCls = 'text-xs font-bold text-ink';
 
 const SectionCard: React.FC<{ title: string; description?: string; children: React.ReactNode; onSave: () => void; saved: boolean }> = ({ title, description, children, onSave, saved }) => (

@@ -54,6 +54,7 @@ export const BusinessPage: React.FC = () => {
                         src={imgSrc}
                         alt={program.title}
                         referrerPolicy="no-referrer"
+                        loading="lazy"
                         className="w-full h-full object-cover"
                       />
                     </div>

@@ -6,7 +6,7 @@ import { Plus, Trash2, Pencil, X, Save } from 'lucide-react';
 import { getProgramPhoto } from '../../utils/programPhoto';
 
 const CATEGORIES: ProgramCategory[] = ['사회서비스', '교육사업', '지역사회사업', '돌봄복지사업', '일자리자립지원', '기타사업'];
-const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary';
+const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 
 type DraftProgram = Omit<ProgramItem, 'id' | 'code'>;
 

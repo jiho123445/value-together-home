@@ -4,7 +4,7 @@ import { ImageUploadField } from '../components/ImageUploadField';
 import { PartnerItem } from '../../types';
 import { Plus, Trash2, Pencil, X, Save } from 'lucide-react';
 
-const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary';
+const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 
 type DraftPartner = Omit<PartnerItem, 'id'>;
 const emptyDraft = (order: number): DraftPartner => ({ name: '', logoUrl: undefined, description: '', websiteUrl: '', order });

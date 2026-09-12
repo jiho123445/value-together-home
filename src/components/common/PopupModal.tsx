@@ -66,6 +66,17 @@ export const PopupModal: React.FC = () => {
     if (showPopupsFlag) setDismissedIds([]);
   }, [showPopupsFlag]);
 
+  const topPopupId = visiblePopups[0]?.id;
+
+  useEffect(() => {
+    if (!topPopupId) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDismissedIds((prev) => [...prev, topPopupId]);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [topPopupId]);
+
   if (visiblePopups.length === 0) return null;
 
   return (
@@ -74,6 +85,9 @@ export const PopupModal: React.FC = () => {
         {visiblePopups.slice(0, 3).map((popup, idx) => (
           <div
             key={popup.id}
+            role="dialog"
+            aria-modal="false"
+            aria-labelledby={`popup-title-${popup.id}`}
             style={{ transform: `translate(${idx * 14}px, ${idx * 14}px)`, zIndex: 100 - idx }}
             className="relative bg-paper-card rounded-3xl shadow-2xl w-[min(92vw,380px)] overflow-hidden border border-line"
           >
@@ -88,7 +102,7 @@ export const PopupModal: React.FC = () => {
               </a>
             )}
             <div className="p-5 space-y-2">
-              <h3 className="font-display font-extrabold text-ink text-base">{popup.title}</h3>
+              <h3 id={`popup-title-${popup.id}`} className="font-display font-extrabold text-ink text-base">{popup.title}</h3>
               <p className="text-sm text-ink-soft leading-relaxed whitespace-pre-line line-clamp-4">{popup.content}</p>
               {popup.linkUrl && (
                 <a

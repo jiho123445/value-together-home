@@ -4,8 +4,9 @@ import { downloadNoticeFile } from '../../utils/download';
 import { isAttachmentPreviewable } from '../../utils/attachmentPreview';
 import { AttachmentPreviewModal } from './AttachmentPreviewModal';
 import { GalleryItem, NoticeAttachment } from '../../types';
-import { X, Calendar, Eye, MapPin, CheckCircle2, HeartHandshake, Download, Paperclip, ChevronLeft, ChevronRight, Image as ImageIcon, Layers } from 'lucide-react';
+import { X, Calendar, Eye, MapPin, CheckCircle2, HeartHandshake, Download, Paperclip, ChevronLeft, ChevronRight, Image as ImageIcon, Layers, ExternalLink } from 'lucide-react';
 import { getGalleryPhoto } from '../../utils/galleryPhoto';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface GalleryModalProps {
   item: GalleryItem;
@@ -17,26 +18,32 @@ const GalleryModalContent: React.FC<GalleryModalProps> = ({ item, onClose, getIm
   const rawImages = item.images && item.images.length > 0 ? item.images : item.imageUrl ? [item.imageUrl] : [];
   const allImages = rawImages.length > 0 ? rawImages : [getGalleryPhoto(item, getImageUrl)];
   const [activeIdx, setActiveIdx] = useState(0);
+  const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') setActiveIdx((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
       else if (e.key === 'ArrowRight') setActiveIdx((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
-      else if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [allImages.length, onClose]);
+  }, [allImages.length]);
 
   const rawTarget = allImages[activeIdx] || item.imageUrl;
   const activePhotoUrl = rawTarget ? getImageUrl(rawTarget) : getGalleryPhoto(item, getImageUrl);
 
   return (
     <div className="fixed inset-0 z-50 bg-ink/90 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-paper-card rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gallery-modal-title"
+        className="bg-paper-card rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
+      >
         <div className="relative bg-ink flex items-center justify-center min-h-[300px] max-h-[55vh] overflow-hidden select-none">
           <img src={activePhotoUrl} alt={`${item.title} - 사진 ${activeIdx + 1}`} className="w-full h-full object-contain max-h-[55vh]" />
-          <button onClick={onClose} className="absolute top-4 right-4 p-2.5 text-white bg-black/60 hover:bg-black/80 rounded-full shadow-lg transition-all z-20">
+          <button onClick={onClose} aria-label="닫기" className="absolute top-4 right-4 p-2.5 text-white bg-black/60 hover:bg-black/80 rounded-full shadow-lg transition-all z-20">
             <X className="w-5 h-5" />
           </button>
           {allImages.length > 1 && (
@@ -101,7 +108,7 @@ const GalleryModalContent: React.FC<GalleryModalProps> = ({ item, onClose, getIm
               )}
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-ink">{item.title}</h3>
+          <h3 id="gallery-modal-title" className="text-xl font-extrabold text-ink">{item.title}</h3>
           <p className="text-xs sm:text-sm text-ink-soft leading-relaxed whitespace-pre-line">{item.description}</p>
         </div>
       </div>
@@ -124,22 +131,30 @@ export const ModalViewer: React.FC = () => {
   } = useValueTogether();
 
   const [previewFile, setPreviewFile] = useState<NoticeAttachment | null>(null);
+  const noticeDialogRef = useFocusTrap<HTMLDivElement>(!!selectedNotice, () => goBackFromDetail('news'));
+  const programDialogRef = useFocusTrap<HTMLDivElement>(!!selectedProgram, () => setSelectedProgram(null));
 
   if (['news-detail', 'gallery-detail', 'business-detail'].includes(activeTab)) return null;
 
   if (selectedNotice) {
     return (
       <div className="fixed inset-0 z-50 bg-ink/80 backdrop-blur-xs flex items-center justify-center p-4">
-        <div className="bg-paper-card rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+        <div
+          ref={noticeDialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="notice-modal-title"
+          className="bg-paper-card rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto"
+        >
           <div className="flex items-center justify-between pb-4 border-b border-line">
             <span className="text-xs font-bold text-primary-ink bg-primary-soft px-3 py-1 rounded-full">{selectedNotice.category}</span>
-            <button onClick={() => goBackFromDetail('news')} className="p-1.5 text-ink-soft hover:text-ink rounded-lg hover:bg-paper-soft">
+            <button onClick={() => goBackFromDetail('news')} className="p-1.5 text-ink-soft hover:text-ink rounded-lg hover:bg-paper-soft" aria-label="닫기">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-xl sm:text-2xl font-bold text-ink leading-snug">{selectedNotice.title}</h3>
+            <h3 id="notice-modal-title" className="text-xl sm:text-2xl font-bold text-ink leading-snug">{selectedNotice.title}</h3>
             <div className="flex items-center gap-4 text-xs text-ink-soft pt-1">
               <span>작성자: {selectedNotice.author}</span>
               <span>작성일: {selectedNotice.date}</span>
@@ -148,6 +163,18 @@ export const ModalViewer: React.FC = () => {
           </div>
 
           <div className="bg-paper-soft p-5 rounded-2xl text-ink text-sm leading-relaxed whitespace-pre-wrap">{selectedNotice.content}</div>
+
+          {selectedNotice.category === '보도자료' && selectedNotice.externalUrl && (
+            <a
+              href={selectedNotice.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-bold text-primary-ink underline underline-offset-2"
+            >
+              {selectedNotice.outlet ? `${selectedNotice.outlet}에서 원문 보기` : '원문 기사 보기'}
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
 
           {selectedNotice.attachments && selectedNotice.attachments.length > 0 && (
             <div className="space-y-2.5">
@@ -196,18 +223,24 @@ export const ModalViewer: React.FC = () => {
   if (selectedProgram) {
     return (
       <div className="fixed inset-0 z-50 bg-ink/80 backdrop-blur-xs flex items-center justify-center p-4">
-        <div className="bg-paper-card rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+        <div
+          ref={programDialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="program-modal-title"
+          className="bg-paper-card rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto"
+        >
           <div className="flex items-center justify-between pb-4 border-b border-line">
             <span className="text-xs font-bold text-primary-ink bg-primary-soft px-3 py-1 rounded-full">
               사업 {selectedProgram.code} · {selectedProgram.category}
             </span>
-            <button onClick={() => setSelectedProgram(null)} className="p-1.5 text-ink-soft hover:text-ink rounded-lg hover:bg-paper-soft">
+            <button onClick={() => setSelectedProgram(null)} className="p-1.5 text-ink-soft hover:text-ink rounded-lg hover:bg-paper-soft" aria-label="닫기">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-2xl font-bold text-ink">{selectedProgram.title}</h3>
+            <h3 id="program-modal-title" className="text-2xl font-bold text-ink">{selectedProgram.title}</h3>
             <p className="text-xs text-ink-soft italic">&ldquo;{selectedProgram.subtitle}&rdquo;</p>
           </div>
 

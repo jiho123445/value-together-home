@@ -2,6 +2,7 @@ import React from 'react';
 import { useValueTogether } from '../../context/ValueTogetherContext';
 import { Logo } from '../common/Logo';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
+import { isPlaceholderAddress } from '../../utils/orgInfo';
 
 /**
  * 관리자 로그인 진입점은 이 푸터의 작은 텍스트 링크 하나뿐입니다 — 요구사항
@@ -44,7 +45,7 @@ export const Footer: React.FC = () => {
             <p>{settings.name}</p>
             {settings.representativeName && <p>대표: {settings.representativeName}</p>}
             {settings.businessRegistrationNumber && <p>사업자등록번호: {settings.businessRegistrationNumber}</p>}
-            <p>{settings.address}</p>
+            {!isPlaceholderAddress(settings.address) && <p>{settings.address}</p>}
           </div>
 
           <div className="space-y-2 text-sm sm:text-base">

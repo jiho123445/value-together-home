@@ -6,7 +6,7 @@ import { GalleryItem } from '../../types';
 import { Plus, Trash2, Pencil, X, Save, Loader2, Image as ImageIcon, Tag } from 'lucide-react';
 import { getGalleryPhoto } from '../../utils/galleryPhoto';
 
-const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary';
+const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 
 type DraftGallery = Omit<GalleryItem, 'id' | 'date'> & { date?: string };
 

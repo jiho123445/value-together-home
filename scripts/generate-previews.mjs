@@ -22,7 +22,7 @@ dotenv.config({ path: '.env.local' });
 
 const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || '';
 const DATABASE_ID = process.env.VITE_FIREBASE_DATABASE_ID || '(default)';
-const SITE_ORIGIN = (process.env.SITE_URL || 'https://your-domain.example').replace(/\/$/, '');
+const SITE_ORIGIN = (process.env.SITE_URL || 'https://value-together-home-gray.vercel.app').replace(/\/$/, '');
 const SITE_NAME = '사회적협동조합 가치함께';
 const DIST_DIR = path.join(process.cwd(), 'dist');
 

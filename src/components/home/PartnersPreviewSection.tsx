@@ -25,7 +25,7 @@ export const PartnersPreviewSection: React.FC = () => {
           {track.map((partner, idx) => (
             <div key={`${partner.id}-${idx}`} className="flex flex-col items-center gap-2 w-28 shrink-0">
               {partner.logoUrl ? (
-                <img src={getImageUrl(partner.logoUrl)} alt={partner.name} className="h-14 object-contain grayscale opacity-80" />
+                <img src={getImageUrl(partner.logoUrl)} alt={partner.name} loading="lazy" className="h-14 object-contain grayscale opacity-80" />
               ) : (
                 <div className="h-14 w-20 rounded-lg bg-paper-soft" />
               )}

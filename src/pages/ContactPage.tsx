@@ -3,6 +3,7 @@ import { useValueTogether } from '../context/ValueTogetherContext';
 import { PageBanner } from '../components/common/PageBanner';
 import { InquiryType } from '../types';
 import { HONEYPOT_FIELD_NAME, honeypotStyle, isLikelyBot, checkRateLimit } from '../utils/spamGuard';
+import { isPlaceholderAddress } from '../utils/orgInfo';
 import { MapPin, Phone, Mail, Clock, CheckCircle2 } from 'lucide-react';
 
 const TYPES: InquiryType[] = ['일반문의', '사업문의', '협력문의'];
@@ -78,7 +79,9 @@ export const ContactPage: React.FC = () => {
           <dl className="space-y-3 text-sm">
             <div className="flex items-start gap-2.5">
               <MapPin className="w-4 h-4 text-primary-ink mt-0.5 shrink-0" />
-              <span className="text-ink">{settings.address}</span>
+              <span className="text-ink">
+                {isPlaceholderAddress(settings.address) ? '주소 정보 준비 중입니다.' : settings.address}
+              </span>
             </div>
             {settings.phone && (
               <div className="flex items-center gap-2.5">
@@ -131,26 +134,26 @@ export const ContactPage: React.FC = () => {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-ink">이름 *</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                  <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-ink">연락처 *</label>
-                  <input value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="010-0000-0000" className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                  <input value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="010-0000-0000" className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-xs font-bold text-ink">이메일</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-ink">제목 *</label>
-                <input value={subject} onChange={(e) => setSubject(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary" />
+                <input value={subject} onChange={(e) => setSubject(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper" />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-ink">문의 내용 *</label>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary resize-none" />
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper resize-none" />
               </div>
 
               <input

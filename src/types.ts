@@ -248,6 +248,7 @@ export type ActiveTab =
   | 'terms'
   | 'news-detail'
   | 'gallery-detail'
-  | 'business-detail';
+  | 'business-detail'
+  | 'not-found';
 
 export type AboutSubTab = 'greeting' | 'intro' | 'history' | 'organization' | 'principles';

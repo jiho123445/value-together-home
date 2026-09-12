@@ -218,7 +218,15 @@ const parsePath = (pathname: string, search: string): ParsedPath => {
   if (tabPart === 'admin') {
     return { ...res, tab: 'main', adminOpen: true };
   }
-  res.tab = validTabs.includes(tabPart as ActiveTab) ? (tabPart as ActiveTab) : ('main' as ActiveTab);
+  if (tabPart === '') {
+    res.tab = 'main';
+  } else if (validTabs.includes(tabPart as ActiveTab)) {
+    res.tab = tabPart as ActiveTab;
+  } else {
+    // 알 수 없는 최상위 경로(오타, 삭제된 링크 등)는 조용히 홈으로 보내는 대신
+    // 404 안내 페이지를 표시합니다.
+    res.tab = 'not-found';
+  }
 
   if (params.get('sub')) res.aboutSubTab = params.get('sub') as AboutSubTab;
   if (params.get('cat')) res.noticeCategory = params.get('cat')!;

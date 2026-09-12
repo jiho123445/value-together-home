@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useValueTogether } from '../../context/ValueTogetherContext';
 
-// TODO(Phase 9): 실제 도메인이 정해지면 index.html 및
+// 커스텀 도메인을 새로 연결하면 index.html 및
 // scripts/generate-previews.mjs의 SITE_ORIGIN과 함께 반드시 업데이트하세요.
-const SITE = 'https://your-domain.example';
+const SITE = 'https://value-together-home-gray.vercel.app';
 const SITE_NAME = '사회적협동조합 가치함께';
 
 const pageMeta: Record<string, { title: string; description: string }> = {
@@ -37,6 +37,10 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   },
   privacy: { title: '개인정보처리방침 | 가치함께', description: '사회적협동조합 가치함께 개인정보처리방침입니다.' },
   terms: { title: '이용약관 | 가치함께', description: '사회적협동조합 가치함께 홈페이지 이용약관입니다.' },
+  'not-found': {
+    title: '페이지를 찾을 수 없습니다 | 사회적협동조합 가치함께',
+    description: '요청하신 페이지를 찾을 수 없습니다.',
+  },
 };
 
 function upsertMeta(name: string, content: string, property = false) {
@@ -89,6 +93,7 @@ export const SEOHead: React.FC = () => {
 
     const canonical = `${SITE}${window.location.pathname || '/'}`;
     document.title = title;
+    upsertMeta('robots', activeTab === 'not-found' ? 'noindex, follow' : 'index, follow');
     upsertMeta('description', description);
     upsertMeta('og:title', title, true);
     upsertMeta('og:description', description, true);
