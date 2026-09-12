@@ -5,7 +5,7 @@ import { useValueTogether } from '../context/ValueTogetherContext';
 import { Logo } from '../components/common/Logo';
 import {
   LayoutDashboard, Settings, Briefcase, Newspaper, Image as ImageIcon, Handshake,
-  Bell, HeartHandshake, MessageSquare, ScrollText, LogOut, ExternalLink, Menu, X,
+  Bell, HeartHandshake, MessageSquare, ScrollText, LogOut, ExternalLink, Menu, X, ShieldCheck,
 } from 'lucide-react';
 
 import { DashboardTab } from './tabs/DashboardTab';
@@ -18,10 +18,11 @@ import { PopupsTab } from './tabs/PopupsTab';
 import { ParticipationsTab } from './tabs/ParticipationsTab';
 import { InquiriesTab } from './tabs/InquiriesTab';
 import { LogsTab } from './tabs/LogsTab';
+import { SecurityTab } from './tabs/SecurityTab';
 
 type AdminTab =
   | 'dashboard' | 'settings' | 'programs' | 'notices' | 'gallery'
-  | 'partners' | 'popups' | 'participations' | 'inquiries' | 'logs';
+  | 'partners' | 'popups' | 'participations' | 'inquiries' | 'logs' | 'security';
 
 export const AdminShell: React.FC = () => {
   const { setAdminOpen, logoutAdmin, pendingParticipationsCount, pendingInquiriesCount } = useValueTogether();
@@ -39,6 +40,7 @@ export const AdminShell: React.FC = () => {
     { key: 'participations', label: '참여신청', icon: HeartHandshake, badge: pendingParticipationsCount },
     { key: 'inquiries', label: '문의사항', icon: MessageSquare, badge: pendingInquiriesCount },
     { key: 'logs', label: '로그/백업', icon: ScrollText },
+    { key: 'security', label: '보안', icon: ShieldCheck },
   ];
 
   const goToTab = (t: AdminTab) => {
@@ -58,6 +60,7 @@ export const AdminShell: React.FC = () => {
       case 'participations': return <ParticipationsTab />;
       case 'inquiries': return <InquiriesTab />;
       case 'logs': return <LogsTab />;
+      case 'security': return <SecurityTab />;
       default: return null;
     }
   };

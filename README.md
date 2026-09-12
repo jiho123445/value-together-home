@@ -14,6 +14,7 @@ React 19 + TypeScript(strict) + Vite 6 + Tailwind CSS v4 + Firebase(Auth·Firest
 4. [Firestore / Storage 보안 규칙](#4-firestore--storage-보안-규칙)
 4-1. [App Check 설정 방법 (선택, 권장)](#4-1-app-check-설정-방법-선택-권장)
 5. [관리자 계정 설정](#5-관리자-계정-설정)
+5-1. [관리자 2단계 인증(MFA) 설정 방법](#5-1-관리자-2단계-인증mfa-설정-방법)
 6. [환경변수 설정](#6-환경변수-설정)
 7. [로컬 실행 방법](#7-로컬-실행-방법)
 8. [GitHub 업로드 방법](#8-github-업로드-방법)
@@ -129,6 +130,20 @@ gachihamkke/
 3. `firestore.rules`와 `storage.rules`의 `REPLACE_WITH_NEW_ADMIN_UID`를 이 UID로 교체하고 재배포합니다.
 4. `.env.local`(로컬) 및 Vercel 환경변수(배포)에 `VITE_ADMIN_UID`(같은 UID)와 `VITE_ADMIN_EMAIL`을 설정합니다.
 5. 관리자 화면은 사이트 하단 푸터의 작은 "관리자" 링크로 들어갈 수 있습니다. 비밀번호는 소스코드 어디에도 저장되어 있지 않으며, Firebase Authentication이 전적으로 인증을 담당합니다.
+
+## 5-1. 관리자 2단계 인증(MFA) 설정 방법
+
+관리자 계정 하나에 사이트 전체의 콘텐츠 수정·삭제 권한과 문의/참여신청 개인정보 열람 권한이 몰려 있으므로, 비밀번호가 어딘가에서 유출되더라도 로그인을 한 번 더 막아주는 2단계 인증(TOTP, 인증 앱 기반)을 설정해 두는 것을 강력히 권장합니다. 코드에는 이미 등록/로그인 연동이 준비되어 있습니다(`src/admin/tabs/SecurityTab.tsx`, `src/admin/AdminLogin.tsx`) — Firebase Console에서 기능을 한 번 켜기만 하면 됩니다.
+
+1. [Firebase Console](https://console.firebase.google.com/) > Authentication > **Sign-in method**(또는 **Settings**) 탭으로 이동합니다.
+2. 페이지 아래쪽에서 **"다단계 인증(Multi-factor authentication)"** 항목을 찾아 **TOTP(인증 앱)** 방식을 활성화합니다. (화면 구성은 Firebase 업데이트에 따라 조금씩 달라질 수 있습니다 — 안 보이면 스크린샷 보여주시면 같이 찾아드릴게요.)
+3. 관리자 계정으로 사이트에 로그인 → 관리자 화면 좌측 메뉴의 **"보안"** 탭으로 이동.
+4. **"2단계 인증 설정 시작"** 클릭 → 화면에 나오는 **설정 키**를 Google OTP/Microsoft Authenticator/Authy 등 인증 앱에 "직접 입력(수동 입력)"으로 등록 → 앱에 표시되는 6자리 코드를 입력해 등록 완료.
+5. 등록이 끝나면 다음 로그인부터는 비밀번호 입력 후 인증 앱의 6자리 코드까지 입력해야 로그인됩니다.
+
+**주의 — 인증 기기를 분실하면 스스로 해제할 방법이 없습니다.** (로그인이 막히기 때문에 "보안" 탭에도 들어갈 수 없습니다.) 이를 대비해:
+- 가능하면 예비 기기(예: 본인 명의의 다른 휴대폰)에도 "인증 앱 추가 등록"으로 하나 더 등록해 두세요.
+- 그래도 두 기기를 모두 잃어버린 경우, Firebase Console 또는 Firebase Admin SDK를 통해 해당 계정의 2단계 인증을 강제로 해제해야 합니다 — 이런 상황이 생기면 말씀해 주시면 복구를 도와드리겠습니다.
 
 ## 6. 환경변수 설정
 

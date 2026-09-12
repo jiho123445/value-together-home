@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  getMultiFactorResolver,
+  TotpMultiFactorGenerator,
+  type MultiFactorResolver,
+} from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useValueTogether } from '../context/ValueTogetherContext';
 import { Logo } from '../components/common/Logo';
@@ -23,7 +29,22 @@ export const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 관리자 계정에 TOTP 2단계 인증이 등록되어 있으면, 비밀번호 확인 직후
+  // Firebase가 signInWithEmailAndPassword를 'auth/multi-factor-auth-required'
+  // 에러로 실패시킵니다(이 시점엔 세션이 전혀 생성되지 않습니다). 이 resolver를
+  // 받아 인증 앱의 6자리 코드까지 확인해야 실제 로그인이 완료됩니다.
+  const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
+  const [mfaCode, setMfaCode] = useState('');
+
   const ADMIN_UID = String(import.meta.env.VITE_ADMIN_UID || '').trim();
+
+  const finalizeAdminCheck = async (uid: string) => {
+    if (!ADMIN_UID || uid !== ADMIN_UID) {
+      await signOut(auth);
+      setError('관리자 계정이 아닙니다. 관리자 계정으로만 접속할 수 있습니다.');
+    }
+    // uid가 일치하면 onAuthStateChanged가 isAdmin을 true로 갱신합니다.
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,16 +53,49 @@ export const AdminLogin: React.FC = () => {
 
     try {
       const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      if (!ADMIN_UID || cred.user.uid !== ADMIN_UID) {
-        await signOut(auth);
-        setError('관리자 계정이 아닙니다. 관리자 계정으로만 접속할 수 있습니다.');
+      await finalizeAdminCheck(cred.user.uid);
+    } catch (err: any) {
+      if (err?.code === 'auth/multi-factor-auth-required') {
+        setMfaResolver(getMultiFactorResolver(auth, err));
+      } else {
+        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
       }
-      // uid가 일치하면 onAuthStateChanged가 isAdmin을 true로 갱신합니다.
-    } catch {
-      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaResolver) return;
+
+    const totpHint = mfaResolver.hints.find((h) => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
+    if (!totpHint) {
+      setError('이 계정에 등록된 인증 방식을 확인할 수 없습니다. 관리자에게 문의해 주세요.');
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+    try {
+      const assertion = TotpMultiFactorGenerator.assertionForSignIn(totpHint.uid, mfaCode.trim());
+      const cred = await mfaResolver.resolveSignIn(assertion);
+      await finalizeAdminCheck(cred.user.uid);
+      setMfaResolver(null);
+      setMfaCode('');
+    } catch {
+      setError('인증 코드가 올바르지 않거나 만료되었습니다. 인증 앱의 최신 코드로 다시 시도해 주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelMfa = () => {
+    // 이 시점까지는 Firebase 세션이 아직 만들어지지 않은 상태이므로,
+    // 상태만 초기화하면 처음 로그인 화면으로 돌아갑니다.
+    setMfaResolver(null);
+    setMfaCode('');
+    setError(null);
   };
 
   return (
@@ -64,41 +118,74 @@ export const AdminLogin: React.FC = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-ink">관리자 이메일</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@gachihamkke.or.kr"
-              className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
-              autoComplete="username"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-ink">비밀번호</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호"
-              className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
-              autoComplete="current-password"
-            />
-          </div>
+        {mfaResolver ? (
+          <form onSubmit={handleMfaSubmit} className="space-y-4">
+            <p className="text-xs text-ink-soft text-center">
+              등록된 인증 앱에 표시된 6자리 코드를 입력해 주세요.
+            </p>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-ink">인증 코드</label>
+              <input
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                inputMode="numeric"
+                autoFocus
+                placeholder="123456"
+                className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm tracking-[0.3em] font-mono text-center focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+              />
+            </div>
 
-          {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+            {error && <p className="text-xs font-bold text-red-600">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-ink text-white font-extrabold text-sm shadow-sm hover:bg-ink/90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-            로그인
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-ink text-white font-extrabold text-sm shadow-sm hover:bg-ink/90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+              확인
+            </button>
+            <button type="button" onClick={cancelMfa} className="w-full text-xs font-bold text-ink-soft hover:text-ink">
+              처음부터 다시 로그인하기
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-ink">관리자 이메일</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@gachihamkke.or.kr"
+                className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+                autoComplete="username"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-ink">비밀번호</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="비밀번호"
+                className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+                autoComplete="current-password"
+              />
+            </div>
+
+            {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-ink text-white font-extrabold text-sm shadow-sm hover:bg-ink/90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+              로그인
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
