@@ -12,6 +12,7 @@ React 19 + TypeScript(strict) + Vite 6 + Tailwind CSS v4 + Firebase(Auth·Firest
 2. [Firebase 프로젝트 설정 방법](#2-firebase-프로젝트-설정-방법)
 3. [Firestore 데이터 구조](#3-firestore-데이터-구조)
 4. [Firestore / Storage 보안 규칙](#4-firestore--storage-보안-규칙)
+4-1. [App Check 설정 방법 (선택, 권장)](#4-1-app-check-설정-방법-선택-권장)
 5. [관리자 계정 설정](#5-관리자-계정-설정)
 6. [환경변수 설정](#6-환경변수-설정)
 7. [로컬 실행 방법](#7-로컬-실행-방법)
@@ -107,6 +108,19 @@ gachihamkke/
 - 실제 권한 판단은 항상 Firebase Security Rules에서 이루어지며, 클라이언트 코드(`isAdmin` 상태값)는 화면 표시 여부만 결정합니다.
 - 개인정보 포함 컬렉션(`participations`, `inquiries`)은 방문자가 "생성"만 할 수 있고, 생성 시 필드 구성·타입·길이가 Rules에서 서버 측으로 검증됩니다.
 - 이미지/첨부파일은 Storage Rules에서 다시 한 번 용량·MIME 타입·확장자를 검증합니다 (클라이언트 검증은 사용자 경험을 위한 1차 방어일 뿐입니다).
+
+## 4-1. App Check 설정 방법 (선택, 권장)
+
+로그인 없이 누구나 쓸 수 있는 공개 폼(문의하기, 참여·후원 신청)과 페이지뷰 카운터(`visits` 컬렉션)는 구조상 봇/자동화 스크립트의 대량 요청에 노출되어 있습니다. `firestore.rules`의 필드 검증과 코드 상의 레이트리밋(`src/utils/spamGuard.ts`)이 1차 방어선이지만, "이 요청이 실제로 우리 웹사이트에서 브라우저로 보낸 것인지"까지는 확인해 주지 못합니다. **Firebase App Check**가 그 역할을 하는 서비스이며, 코드에는 이미 연동 로직이 준비되어 있습니다(`src/lib/firebase.ts`) — 아래 Firebase Console 설정만 완료하면 됩니다.
+
+1. [Firebase Console](https://console.firebase.google.com/) > 프로젝트 선택 > 왼쪽 메뉴 **App Check**로 이동합니다.
+2. "앱 등록"에서 이 프로젝트의 웹 앱을 선택하고, 공급자로 **reCAPTCHA v3**를 선택합니다. Firebase가 자동으로 reCAPTCHA v3 사이트 키를 발급해 주거나, 이미 가진 키를 연결할 수 있습니다.
+3. 발급된 **사이트 키**를 복사해서 `.env.local`(로컬)과 Vercel Environment Variables(배포)의 `VITE_RECAPTCHA_V3_SITE_KEY`에 붙여넣고, 다시 배포합니다.
+4. 로컬 개발 시에는 reCAPTCHA v3가 `localhost`를 인증할 수 없으므로, 대신 "디버그 토큰"을 씁니다. `npm run dev`로 로컬 사이트를 열면 브라우저 콘솔에 임의의 디버그 토큰이 한 번 출력됩니다 — 이 값을 App Check > 앱 선택 > **"디버그 토큰 관리"**에 한 번 등록해 두면, 이후로는 로컬 개발이 계속 정상 동작합니다.
+5. 배포 후 며칠간은 강제 적용(Enforce)하지 말고 **"모니터링(Unenforced)"** 상태로 두세요. App Check > Firestore / App Check > Storage 각각의 "지표(Metrics)" 탭에서 실제 방문자 요청 대부분이 "확인됨(Verified)"으로 표시되는지 확인한 뒤에 "적용(Enforce)"으로 전환해야, 실제 방문자가 실수로 차단되는 사고를 피할 수 있습니다.
+6. 확인이 끝나면 App Check > Firestore, App Check > Storage 각각에서 **"적용(Enforce)"**으로 전환합니다. 이 순간부터 App Check 토큰이 없는 요청(스크립트로 직접 Firestore API를 호출하는 등)은 서버 단에서 거부됩니다.
+
+`VITE_RECAPTCHA_V3_SITE_KEY`를 설정하지 않으면 App Check는 그냥 비활성화된 채로 남아 있고 사이트는 지금처럼 정상 동작합니다 — 급하지 않다면 나중에 언제든 추가해도 됩니다.
 
 ## 5. 관리자 계정 설정
 

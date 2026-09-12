@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 // All Firebase configuration comes from environment variables (.env.local /
 // Vercel Environment Variables) rather than a committed JSON file. This is
@@ -36,6 +37,50 @@ if (!firebaseConfig.projectId && import.meta.env.PROD) {
 }
 
 const app = initializeApp(firebaseConfig);
+
+// ─────────────────────────────────────────────────────────────────────────
+// Firebase App Check — bot/abuse protection for the write paths that don't
+// require login (문의/후원신청 폼, 방문자 카운트 등). Uses reCAPTCHA v3 as
+// the attestation provider, which runs invisibly in the background (no
+// checkbox/puzzle shown to visitors).
+//
+// This is intentionally opt-in and fails soft: until VITE_RECAPTCHA_V3_
+// SITE_KEY is set, App Check is simply skipped and the site behaves exactly
+// as before. See README.md "App Check 설정 방법" for the one-time Firebase
+// Console steps (registering a reCAPTCHA v3 key, then turning on
+// enforcement for Firestore/Storage once traffic looks normal in Monitor
+// mode). Initializing it here is necessary but not sufficient — actual
+// enforcement is a separate switch flipped in the Firebase Console; without
+// that switch, this only attaches a token that nothing yet checks.
+const recaptchaSiteKey = String(import.meta.env.VITE_RECAPTCHA_V3_SITE_KEY || '').trim();
+
+if (recaptchaSiteKey) {
+  if (import.meta.env.DEV) {
+    // reCAPTCHA v3 can't attest localhost, so local dev needs a "debug
+    // token" instead. Setting this to `true` makes the SDK generate a
+    // random token and print it to the browser console the first time the
+    // app runs locally — register that value once under Firebase Console >
+    // App Check > Apps > (this web app) > Manage debug tokens, and local
+    // dev keeps working after that (no need to redo this per machine
+    // beyond the one registration).
+    (self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  }
+
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (error) {
+    console.error('[firebase] App Check 초기화 실패:', error);
+  }
+} else if (import.meta.env.PROD) {
+  console.warn(
+    '[firebase] VITE_RECAPTCHA_V3_SITE_KEY가 설정되지 않아 App Check가 비활성화되어 ' +
+    '있습니다. Firebase Console에서 App Check를 등록한 뒤 이 환경변수를 추가하면 ' +
+    '자동으로 활성화됩니다. (README.md 참고)'
+  );
+}
 
 export const db = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
 export const auth = getAuth(app);
