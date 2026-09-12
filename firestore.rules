@@ -10,7 +10,7 @@ service cloud.firestore {
         // 않습니다 — 이 파일은 Firebase에만 배포됩니다).
     function isAdmin() {
       return request.auth != null
-        && request.auth.uid == 'REPLACE_WITH_NEW_ADMIN_UID';
+        && request.auth.uid == 'ddml8G4jSiU03hJm4rzaWXQ0hdt2';
     }
 
     // 공개 콘텐츠(기관 소개, 사업, 소식, 갤러리, 팝업, 협력기관). 방문자가

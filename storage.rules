@@ -6,7 +6,7 @@ service firebase.storage {
     // ⚠️ firestore.rules와 동일한 UID로 맞춰주세요 (배포 전 필수 교체).
     function isAdmin() {
       return request.auth != null
-        && request.auth.uid == 'REPLACE_WITH_NEW_ADMIN_UID';
+        && request.auth.uid == 'ddml8G4jSiU03hJm4rzaWXQ0hdt2';
     }
 
     // 활동갤러리 사진: 1개당 최대 10MiB, 이미지 형식만 허용.
