@@ -11,7 +11,7 @@ interface LogoProps {
 const SIZE_MAP: Record<NonNullable<LogoProps['size']>, { mark: string; word: string; sub: string }> = {
   header: { mark: 'h-16 w-16 sm:h-[88px] sm:w-[88px] lg:h-[104px] lg:w-[104px]', word: 'text-3xl sm:text-4xl lg:text-[44px]', sub: 'text-xs sm:text-sm lg:text-base' },
   hero: { mark: 'h-16 w-16 sm:h-20 sm:w-20', word: 'text-3xl sm:text-4xl', sub: 'text-xs sm:text-sm' },
-  footer: { mark: 'h-8 w-8', word: 'text-base', sub: 'text-[11px]' },
+  footer: { mark: 'h-12 w-12 sm:h-14 sm:w-14', word: 'text-xl sm:text-2xl', sub: 'text-xs sm:text-sm' },
 };
 
 /**

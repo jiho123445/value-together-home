@@ -15,40 +15,40 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-ink text-white/70 mt-auto">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-8">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
-          <div className="space-y-3">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16 space-y-10">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10">
+          <div className="space-y-4 max-w-md">
             <Logo size="footer" className="[&_span]:text-white [&_span.text-secondary-ink]:text-white/50" />
-            <p className="text-xs leading-relaxed max-w-sm text-white/60">{settings.sloganSub}</p>
+            <p className="text-sm sm:text-base leading-relaxed text-white/60">{settings.sloganSub}</p>
             <div className="flex items-center gap-3 pt-1">
               {settings.snsLinks?.facebook && (
-                <a href={settings.snsLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="p-2 rounded-full bg-white/10 hover:bg-white/20">
-                  <Facebook className="w-4 h-4" />
+                <a href={settings.snsLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
+                  <Facebook className="w-5 h-5" />
                 </a>
               )}
               {settings.snsLinks?.instagram && (
-                <a href={settings.snsLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="p-2 rounded-full bg-white/10 hover:bg-white/20">
-                  <Instagram className="w-4 h-4" />
+                <a href={settings.snsLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
+                  <Instagram className="w-5 h-5" />
                 </a>
               )}
               {settings.snsLinks?.youtube && (
-                <a href={settings.snsLinks.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="p-2 rounded-full bg-white/10 hover:bg-white/20">
-                  <Youtube className="w-4 h-4" />
+                <a href={settings.snsLinks.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
+                  <Youtube className="w-5 h-5" />
                 </a>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-2 text-xs">
-            <div className="space-y-1.5">
-              <p className="text-white font-bold mb-1">단체 정보</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-10 gap-y-4 text-sm sm:text-base">
+            <div className="space-y-2">
+              <p className="text-white font-bold text-base sm:text-lg mb-1.5">단체 정보</p>
               <p>{settings.name}</p>
               {settings.representativeName && <p>대표: {settings.representativeName}</p>}
               {settings.businessRegistrationNumber && <p>사업자등록번호: {settings.businessRegistrationNumber}</p>}
               <p>{settings.address}</p>
             </div>
-            <div className="space-y-1.5">
-              <p className="text-white font-bold mb-1">연락처</p>
+            <div className="space-y-2">
+              <p className="text-white font-bold text-base sm:text-lg mb-1.5">연락처</p>
               {settings.phone && <p>전화: {settings.phone}</p>}
               {settings.fax && <p>팩스: {settings.fax}</p>}
               {settings.email && <p>이메일: {settings.email}</p>}
@@ -57,7 +57,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-white/50">
+        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm text-white/50">
           <p>&copy; {new Date().getFullYear()} {settings.name}. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <button type="button" onClick={() => setActiveTab('privacy')} className="hover:text-white font-bold">개인정보처리방침</button>

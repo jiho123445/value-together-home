@@ -5,6 +5,10 @@ import { ArrowRight, HeartHandshake } from 'lucide-react';
 export const Hero: React.FC = () => {
   const { settings, setActiveTab, getImageUrl, programs, partners } = useValueTogether();
 
+  const commaIndex = settings.sloganMain.indexOf(',');
+  const sloganLine1 = commaIndex === -1 ? settings.sloganMain : settings.sloganMain.slice(0, commaIndex + 1);
+  const sloganLine2 = commaIndex === -1 ? '' : settings.sloganMain.slice(commaIndex + 1).trim();
+
   return (
     <section className="relative bg-paper overflow-hidden">
       <div
@@ -22,8 +26,16 @@ export const Hero: React.FC = () => {
             <HeartHandshake className="w-4 h-4" />
             사회적협동조합 가치함께
           </span>
-          <h1 className="font-display font-black text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.2] text-ink text-balance">
-            {settings.sloganMain}
+          <h1 className="font-display font-black text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.45] text-ink">
+            {sloganLine2 ? (
+              <>
+                {sloganLine1}
+                <br />
+                {sloganLine2}
+              </>
+            ) : (
+              settings.sloganMain
+            )}
           </h1>
           <p className="text-ink-soft text-base sm:text-lg leading-relaxed max-w-lg">{settings.sloganSub}</p>
           <div className="flex flex-wrap gap-3 pt-2">
