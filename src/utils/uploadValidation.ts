@@ -3,8 +3,14 @@
 export const MAX_IMAGE_FILE_BYTES = 10 * 1024 * 1024; // 10 MB per image file
 export const MAX_NOTICE_FILE_BYTES = 25 * 1024 * 1024; // 25 MB per attachment
 
-const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
-const IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+// 일반 조직 이미지(갤러리/사업/설정/핵심가치/협력기관)는 storage.rules에서
+// jpeg/png/webp만 허용합니다(GIF 제외). 예전에는 여기서 GIF도 허용해
+// 놓아서, 관리자가 GIF를 선택하면 이 클라이언트 검증은 통과했다가 실제
+// Storage 업로드 단계에서 규칙에 막혀 실패하는 문제가 있었습니다. 공지
+// 첨부파일(NOTICE_EXTENSIONS/NOTICE_MIME_TYPES)은 storage.rules에서 GIF를
+// 별도로 허용하므로 그대로 둡니다.
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
+const IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 const NOTICE_EXTENSIONS = new Set([
   'pdf', 'hwp', 'hwpx', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
@@ -37,10 +43,10 @@ export function getFileExtension(name: string): string {
 export function validateImageFile(file: File, maxBytes = MAX_IMAGE_FILE_BYTES): void {
   const ext = getFileExtension(file.name);
   if (!IMAGE_EXTENSIONS.has(ext)) {
-    throw new Error('허용되지 않는 이미지 형식입니다. JPG, JPEG, PNG, WEBP, GIF 파일만 사용할 수 있습니다.');
+    throw new Error('허용되지 않는 이미지 형식입니다. JPG, JPEG, PNG, WEBP 파일만 사용할 수 있습니다.');
   }
   if (!IMAGE_MIME_TYPES.has(file.type)) {
-    throw new Error('이미지 파일의 형식(MIME Type)을 확인할 수 없습니다. 정상적인 JPG, PNG, WEBP, GIF 파일을 선택해 주세요.');
+    throw new Error('이미지 파일의 형식(MIME Type)을 확인할 수 없습니다. 정상적인 JPG, PNG, WEBP 파일을 선택해 주세요.');
   }
   if (file.size > maxBytes) {
     throw new Error(`이미지 1개당 최대 ${maxBytes / (1024 * 1024)}MB까지 업로드할 수 있습니다.`);

@@ -57,17 +57,26 @@ export interface RateLimitResult {
  * stored in localStorage. Fails OPEN (allows the submission) if
  * localStorage is unavailable, so a privacy-mode browser or storage
  * quota issue never blocks a legitimate visitor from submitting.
+ *
+ * maxSubmissions/windowMs default to the values tuned for the public
+ * participation/inquiry forms (3 per 10 minutes). Other callers with a
+ * different tolerance — e.g. the pageview counter, which legitimately
+ * fires many times per visit — can pass their own, more generous limit.
  */
-export function checkRateLimit(storageKey: string): RateLimitResult {
+export function checkRateLimit(
+  storageKey: string,
+  maxSubmissions: number = RATE_LIMIT_MAX_SUBMISSIONS,
+  windowMs: number = RATE_LIMIT_WINDOW_MS
+): RateLimitResult {
   try {
     const raw = localStorage.getItem(storageKey);
     const timestamps: number[] = raw ? JSON.parse(raw) : [];
     const now = Date.now();
-    const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+    const recent = timestamps.filter((t) => now - t < windowMs);
 
-    if (recent.length >= RATE_LIMIT_MAX_SUBMISSIONS) {
+    if (recent.length >= maxSubmissions) {
       const oldest = Math.min(...recent);
-      const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - oldest);
+      const retryAfterMs = windowMs - (now - oldest);
       return { allowed: false, retryAfterMinutes: Math.max(1, Math.ceil(retryAfterMs / 60000)) };
     }
 

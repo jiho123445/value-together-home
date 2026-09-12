@@ -3,6 +3,7 @@ import { useValueTogether } from '../context/ValueTogetherContext';
 import { PageBanner } from '../components/common/PageBanner';
 import { ParticipationType } from '../types';
 import { HONEYPOT_FIELD_NAME, honeypotStyle, isLikelyBot, checkRateLimit } from '../utils/spamGuard';
+import { isSafeHttpUrl } from '../utils/safeUrl';
 import { CheckCircle2, HeartHandshake } from 'lucide-react';
 
 const TYPES: ParticipationType[] = ['조합원가입', '자원봉사', '후원협력', '기관협력'];
@@ -88,7 +89,7 @@ export const PartnersPage: React.FC = () => {
                   <div className="min-w-0">
                     <p className="font-bold text-ink text-sm truncate">{partner.name}</p>
                     {partner.description && <p className="text-xs text-ink-soft truncate">{partner.description}</p>}
-                    {partner.websiteUrl && (
+                    {isSafeHttpUrl(partner.websiteUrl) && (
                       <a href={partner.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary-ink underline underline-offset-2">
                         바로가기
                       </a>

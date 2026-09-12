@@ -3,6 +3,7 @@ import { useValueTogether } from '../../context/ValueTogetherContext';
 import { Logo } from '../common/Logo';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 import { isPlaceholderAddress } from '../../utils/orgInfo';
+import { isSafeHttpUrl } from '../../utils/safeUrl';
 
 /**
  * 관리자 로그인 진입점은 이 푸터의 작은 텍스트 링크 하나뿐입니다 — 요구사항
@@ -22,18 +23,18 @@ export const Footer: React.FC = () => {
             <Logo size="footer" className="[&_span]:text-white [&_span.text-secondary-ink]:text-white/50" />
             <p className="text-sm sm:text-base leading-relaxed text-white/60">{settings.sloganSub}</p>
             <div className="flex items-center gap-3 pt-1">
-              {settings.snsLinks?.facebook && (
-                <a href={settings.snsLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
+              {isSafeHttpUrl(settings.snsLinks?.facebook) && (
+                <a href={settings.snsLinks!.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
                   <Facebook className="w-5 h-5" />
                 </a>
               )}
-              {settings.snsLinks?.instagram && (
-                <a href={settings.snsLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
+              {isSafeHttpUrl(settings.snsLinks?.instagram) && (
+                <a href={settings.snsLinks!.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
                   <Instagram className="w-5 h-5" />
                 </a>
               )}
-              {settings.snsLinks?.youtube && (
-                <a href={settings.snsLinks.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
+              {isSafeHttpUrl(settings.snsLinks?.youtube) && (
+                <a href={settings.snsLinks!.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="p-2.5 rounded-full bg-white/10 hover:bg-white/20">
                   <Youtube className="w-5 h-5" />
                 </a>
               )}

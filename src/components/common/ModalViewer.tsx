@@ -7,6 +7,7 @@ import { GalleryItem, NoticeAttachment } from '../../types';
 import { X, Calendar, Eye, MapPin, CheckCircle2, HeartHandshake, Download, Paperclip, ChevronLeft, ChevronRight, Image as ImageIcon, Layers, ExternalLink } from 'lucide-react';
 import { getGalleryPhoto } from '../../utils/galleryPhoto';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { isSafeHttpUrl } from '../../utils/safeUrl';
 
 interface GalleryModalProps {
   item: GalleryItem;
@@ -164,7 +165,7 @@ export const ModalViewer: React.FC = () => {
 
           <div className="bg-paper-soft p-5 rounded-2xl text-ink text-sm leading-relaxed whitespace-pre-wrap">{selectedNotice.content}</div>
 
-          {selectedNotice.category === '보도자료' && selectedNotice.externalUrl && (
+          {selectedNotice.category === '보도자료' && isSafeHttpUrl(selectedNotice.externalUrl) && (
             <a
               href={selectedNotice.externalUrl}
               target="_blank"

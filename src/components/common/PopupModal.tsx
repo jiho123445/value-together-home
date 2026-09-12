@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useValueTogether } from '../../context/ValueTogetherContext';
 import { X } from 'lucide-react';
+import { isSafeHttpUrl } from '../../utils/safeUrl';
 
 const HIDDEN_KEY = 'gachihamkke_hidden_popups';
 
@@ -82,7 +83,9 @@ export const PopupModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[9990] flex items-center justify-center p-4 pointer-events-none">
       <div className="pointer-events-auto flex flex-col gap-4 items-center">
-        {visiblePopups.slice(0, 3).map((popup, idx) => (
+        {visiblePopups.slice(0, 3).map((popup, idx) => {
+          const hasSafeLink = isSafeHttpUrl(popup.linkUrl);
+          return (
           <div
             key={popup.id}
             role="dialog"
@@ -93,9 +96,9 @@ export const PopupModal: React.FC = () => {
           >
             {popup.imageUrl && (
               <a
-                href={popup.linkUrl || undefined}
-                target={popup.linkUrl ? '_blank' : undefined}
-                rel={popup.linkUrl ? 'noopener noreferrer' : undefined}
+                href={hasSafeLink ? popup.linkUrl : undefined}
+                target={hasSafeLink ? '_blank' : undefined}
+                rel={hasSafeLink ? 'noopener noreferrer' : undefined}
                 className="block bg-paper-soft"
               >
                 <img src={getImageUrl(popup.imageUrl)} alt={popup.title} className="w-full max-h-56 object-cover" />
@@ -104,7 +107,7 @@ export const PopupModal: React.FC = () => {
             <div className="p-5 space-y-2">
               <h3 id={`popup-title-${popup.id}`} className="font-display font-extrabold text-ink text-base">{popup.title}</h3>
               <p className="text-sm text-ink-soft leading-relaxed whitespace-pre-line line-clamp-4">{popup.content}</p>
-              {popup.linkUrl && (
+              {hasSafeLink && (
                 <a
                   href={popup.linkUrl}
                   target="_blank"
@@ -136,7 +139,8 @@ export const PopupModal: React.FC = () => {
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -18,7 +18,7 @@
  * 업로드 엔드포인트를 만드는 결과로도 이어진다. 업로드가 실패하면 에러를
  * 그대로 상위로 전달해 관리자 화면에 실패로 표시되게 한다.
  */
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../lib/firebase';
 
 const generateFileName = (originalName: string): string => {
@@ -68,4 +68,58 @@ export function canvasToBlob(canvas: HTMLCanvasElement, quality = 0.85): Promise
   return new Promise((resolve) => {
     canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// 교체/삭제된 Storage 파일 정리
+//
+// 관리자가 이미지를 새로 업로드해 필드를 교체하면, 예전 파일은 Firebase
+// Storage에 그대로 남아 계속 용량을 차지합니다(수년간 로고·대표사진·사업
+// 이미지를 계속 바꾸면 쓰이지 않는 파일이 계속 쌓이는 문제).
+//
+// 여기서는 Firestore 문서 전체를 "교체 전(previous) / 교체 후(next)"로
+// 통째로 비교해, previous에는 있었지만 next에는 더 이상 어디에도 등장하지
+// 않는 Firebase Storage 다운로드 URL만 추려 삭제합니다. 이 방식은 필드
+// 이름을 일일이 알 필요 없이 settings/programs/notices/gallery/partners/
+// popups 문서 전체에 공통으로 적용할 수 있습니다.
+//
+// ⚠️ 반드시 Firestore 저장이 성공적으로 끝난 뒤에만 호출해야 합니다.
+// 저장이 실패했는데 먼저 파일을 지워버리면, 여전히 예전 URL을 참조하는
+// 실제 서비스 문서가 깨진 이미지를 보여주게 됩니다.
+const FIREBASE_STORAGE_URL_PATTERN = /^https:\/\/firebasestorage\.googleapis\.com\/.+/;
+
+function collectStorageUrls(value: unknown, acc: Set<string> = new Set()): Set<string> {
+  if (typeof value === 'string') {
+    if (FIREBASE_STORAGE_URL_PATTERN.test(value)) acc.add(value);
+  } else if (Array.isArray(value)) {
+    value.forEach((item) => collectStorageUrls(item, acc));
+  } else if (value && typeof value === 'object') {
+    Object.values(value).forEach((item) => collectStorageUrls(item, acc));
+  }
+  return acc;
+}
+
+/**
+ * previous/next 문서를 비교해 더 이상 참조되지 않는 Storage 파일을
+ * 삭제합니다. 개별 파일 삭제 실패(이미 지워짐, 네트워크 오류 등)는 조용히
+ * 무시합니다 — 통계성 정리 작업이 실패했다고 방문자나 관리자 화면에 영향을
+ * 주어서는 안 되기 때문입니다.
+ */
+export function cleanupReplacedStorageFiles(previous: unknown, next: unknown): void {
+  try {
+    const before = collectStorageUrls(previous);
+    const after = collectStorageUrls(next);
+    before.forEach((url) => {
+      if (after.has(url)) return;
+      try {
+        deleteObject(ref(storage, url)).catch(() => {
+          // 이미 삭제됐거나 권한/네트워크 문제 — 무시.
+        });
+      } catch {
+        // ref(storage, url) 파싱 실패 등 — 무시.
+      }
+    });
+  } catch {
+    // 정리 작업 자체의 예외는 저장 성공 흐름에 영향을 주면 안 되므로 무시.
+  }
 }

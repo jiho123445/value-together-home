@@ -33,6 +33,8 @@ import {
 import { formatImageUrl } from '../utils/imageUrl';
 import { sanitizeForFirestore } from '../utils/sanitizeForFirestore';
 import { writeAuditLog } from '../utils/auditLog';
+import { cleanupReplacedStorageFiles } from '../utils/uploadToStorage';
+import { checkRateLimit } from '../utils/spamGuard';
 
 // ─────────────────────────────────────────────────────────────────────────
 // ARCHITECTURE NOTES
@@ -112,7 +114,7 @@ interface ValueTogetherContextType {
   goBackFromDetail: (fallbackTab?: ActiveTab) => void;
 
   addTimelineItem: (item: Omit<TimelineItem, 'id'>) => void;
-  updateTimelineItem: (id: string, item: Partial<TimelineItem>) => void;
+  updateTimelineItem: (id: string, item: Partial<TimelineItem>) => Promise<boolean>;
   deleteTimelineItem: (id: string) => void;
 
   addProgram: (program: Omit<ProgramItem, 'id' | 'code'>) => void;
@@ -149,7 +151,7 @@ interface ValueTogetherContextType {
   updateInquiryStatus: (id: string, status: ContactInquiry['status']) => Promise<void>;
   deleteInquiry: (id: string) => Promise<void>;
 
-  updateSettings: (newSettings: Partial<OrgSettings>) => void;
+  updateSettings: (newSettings: Partial<OrgSettings>) => Promise<boolean>;
   resetToDefaults: () => void;
 }
 
@@ -617,8 +619,24 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   // 관리자 대시보드의 "오늘 페이지뷰" 카드에서 getCountFromServer로
   // 집계하며, 실패해도 방문자 경험에 영향이 없도록 완전히 fire-and-forget
   // 으로 처리합니다.
+  //
+  // ⚠️ `visits`는 firestore.rules에서 (형식이 맞으면) 누구나 create할 수
+  // 있어야 하므로 — 로그인하지 않은 일반 방문자도 페이지를 볼 때마다 이
+  // 컬렉션에 문서를 만들어야 함 — 완전히 막을 수는 없습니다. 대신 같은
+  // 브라우저가 짧은 시간 안에 지나치게 많은 쓰기를 만들지 못하도록 최소한의
+  // 클라이언트 레이트리밋을 둡니다. 이는 실수/버그로 인한 폭주나 아주
+  // 단순한 봇을 완화할 뿐이며, 진짜 방어선은 아닙니다 — 결연한 공격자는
+  // Firestore SDK로 직접 쓰기 요청을 반복할 수 있으므로, 근본적인 해결에는
+  // Firebase App Check 적용이 필요합니다(별도 안내 참고).
+  const PAGEVIEW_RATE_LIMIT_KEY = 'gachihamkke_pageview_rate';
+  const PAGEVIEW_MAX_PER_WINDOW = 60; // 5분 동안 최대 60회 — 정상적인 탐색은 절대 넘지 않을 여유 있는 값
+  const PAGEVIEW_WINDOW_MS = 5 * 60 * 1000;
+
   const logPageview = useCallback((path: string) => {
     try {
+      if (!checkRateLimit(PAGEVIEW_RATE_LIMIT_KEY, PAGEVIEW_MAX_PER_WINDOW, PAGEVIEW_WINDOW_MS).allowed) {
+        return;
+      }
       const today = new Date().toISOString().split('T')[0];
       addDoc(collection(db, 'visits'), { date: today, path: path.slice(0, 190), createdAt: new Date().toISOString() }).catch(() => {
         // 조용히 무시 — 통계 수집 실패가 방문자에게 노출되어서는 안 됩니다.
@@ -696,7 +714,15 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   // through that sanitizer, and the size check below for why we fail fast
   // with a clear Korean message before Firestore's own 1MB limit would
   // otherwise reject the write with a much less helpful error.
-  const postMutation = useCallback((docName: string, payload: any, actionName: string) => {
+  // previousPayload를 넘기면, 저장이 성공한 뒤 previousPayload에는 있었지만
+  // payload에는 더 이상 없는 Firebase Storage 파일(이미지·첨부파일)을 자동
+  // 정리합니다. 반환값은 항상 성공/실패를 나타내는 boolean으로 resolve되는
+  // Promise입니다(reject하지 않음) — 이 함수를 await하지 않는 기존
+  // fire-and-forget 호출부들이 "처리되지 않은 Promise 거부(unhandled
+  // rejection)" 경고를 일으키지 않게 하기 위함이며, 저장 결과를 실제로
+  // 화면에 반영해야 하는 호출부(예: 설정 화면의 저장 버튼)는 이 boolean을
+  // await해서 사용할 수 있습니다.
+  const postMutation = useCallback((docName: string, payload: any, actionName: string, previousPayload?: unknown): Promise<boolean> => {
     const targetDocRef = doc(db, 'content', docName);
     const update: any = sanitizeForFirestore({ ...payload, updatedAt: new Date().toISOString() });
 
@@ -707,22 +733,27 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       handleFirestoreError(new Error(`Payload too large: ~${sizeKb}KB`), OperationType.WRITE, `content/${docName}`);
       setSyncStatus('error');
       setSyncError(`${actionName} 저장에 실패했습니다. 데이터 용량(약 ${sizeKb}KB)이 너무 큽니다. 이미지가 base64로 직접 포함되어 있지 않은지 확인해 주세요.`);
-      return;
+      return Promise.resolve(false);
     }
 
     try {
-      setDoc(targetDocRef, update, { merge: true })
+      return setDoc(targetDocRef, update, { merge: true })
         .then(() => {
           addDebugLog('success', `[저장 완료] ${actionName}`);
           setSyncTimestamp(Date.now());
           setSyncStatus('success');
           setSyncError(null);
           writeAuditLog(docName, actionName);
+          if (previousPayload !== undefined) {
+            cleanupReplacedStorageFiles(previousPayload, payload);
+          }
+          return true;
         })
         .catch((err) => {
           handleFirestoreError(err, OperationType.WRITE, `content/${docName}`);
           setSyncStatus('error');
           setSyncError(`${actionName} 저장에 실패했습니다. (${err instanceof Error ? err.message : String(err)})`);
+          return false;
         });
     } catch (err) {
       // setDoc() can throw synchronously (e.g. on a genuinely invalid field
@@ -731,6 +762,7 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       handleFirestoreError(err, OperationType.WRITE, `content/${docName}`);
       setSyncStatus('error');
       setSyncError(`${actionName} 저장에 실패했습니다. (${err instanceof Error ? err.message : String(err)})`);
+      return Promise.resolve(false);
     }
   }, [addDebugLog]);
 
@@ -741,10 +773,12 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     applyTimeline(next);
     postMutation('timeline', { items: next }, `연혁 추가: ${newItem.year} ${newItem.title}`);
   };
-  const updateTimelineItem = (id: string, updated: Partial<TimelineItem>) => {
+  // Promise<boolean>을 반환합니다 — TimelineEditor의 행별 저장 버튼이 실제
+  // 저장 성공/실패를 표시할 수 있도록 합니다.
+  const updateTimelineItem = (id: string, updated: Partial<TimelineItem>): Promise<boolean> => {
     const next = timelineRef.current.map((t) => (t.id === id ? { ...t, ...updated } : t));
     applyTimeline(next);
-    postMutation('timeline', { items: next }, `연혁 수정 (ID: ${id})`);
+    return postMutation('timeline', { items: next }, `연혁 수정 (ID: ${id})`);
   };
   const deleteTimelineItem = (id: string) => {
     const next = timelineRef.current.filter((t) => t.id !== id);
@@ -754,21 +788,24 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // ── Programs CRUD ──
   const addProgram = (item: Omit<ProgramItem, 'id' | 'code'>) => {
+    const previous = { items: programsRef.current };
     const nextCode = String(programsRef.current.length + 1).padStart(2, '0');
     const newProgram: ProgramItem = { ...item, id: `prg-${Date.now()}`, code: nextCode };
     const next = [...programsRef.current, newProgram];
     applyPrograms(next);
-    postMutation('programs', { items: next }, `사업 추가: ${newProgram.title}`);
+    postMutation('programs', { items: next }, `사업 추가: ${newProgram.title}`, previous);
   };
   const updateProgram = (id: string, updated: Partial<ProgramItem>) => {
+    const previous = { items: programsRef.current };
     const next = programsRef.current.map((p) => (p.id === id ? { ...p, ...updated } : p));
     applyPrograms(next);
-    postMutation('programs', { items: next }, `사업 수정 (ID: ${id})`);
+    postMutation('programs', { items: next }, `사업 수정 (ID: ${id})`, previous);
   };
   const deleteProgram = (id: string) => {
+    const previous = { items: programsRef.current };
     const next = programsRef.current.filter((p) => p.id !== id);
     applyPrograms(next);
-    postMutation('programs', { items: next }, `사업 삭제 (ID: ${id})`);
+    postMutation('programs', { items: next }, `사업 삭제 (ID: ${id})`, previous);
   };
 
   // ── Notices CRUD ──
@@ -779,19 +816,22 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       date: item.date || new Date().toISOString().split('T')[0],
       views: 0,
     };
+    const previousForAdd = { items: noticesRef.current };
     const next = [newNotice, ...noticesRef.current];
     applyNotices(next);
-    postMutation('notices', { items: next }, `소식 추가: ${newNotice.title}`);
+    postMutation('notices', { items: next }, `소식 추가: ${newNotice.title}`, previousForAdd);
   };
   const updateNotice = (id: string, updated: Partial<NoticeItem>) => {
+    const previous = { items: noticesRef.current };
     const next = noticesRef.current.map((n) => (n.id === id ? { ...n, ...updated } : n));
     applyNotices(next);
-    postMutation('notices', { items: next }, `소식 수정 (ID: ${id})`);
+    postMutation('notices', { items: next }, `소식 수정 (ID: ${id})`, previous);
   };
   const deleteNotice = (id: string) => {
+    const previous = { items: noticesRef.current };
     const next = noticesRef.current.filter((n) => n.id !== id);
     applyNotices(next);
-    postMutation('notices', { items: next }, `소식 삭제 (ID: ${id})`);
+    postMutation('notices', { items: next }, `소식 삭제 (ID: ${id})`, previous);
   };
   const incrementNoticeViews = (id: string) => {
     const next = noticesRef.current.map((n) => (n.id === id ? { ...n, views: (n.views || 0) + 1 } : n));
@@ -801,6 +841,7 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // ── Gallery CRUD ──
   const addGallery = (item: Omit<GalleryItem, 'id' | 'date'> & { date?: string; author?: string }) => {
+    const previous = { items: galleryRef.current, categories: galleryCategoriesRef.current };
     const primaryImg = item.imageUrl || (item.images && item.images[0]) || '';
     const allImages = item.images && item.images.length > 0 ? item.images : primaryImg ? [primaryImg] : [];
     const newItem: GalleryItem = {
@@ -813,26 +854,33 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     };
     const next = [newItem, ...galleryRef.current];
     applyGallery(next);
-    postMutation('gallery', { items: next, categories: galleryCategoriesRef.current }, `갤러리 추가: ${newItem.title}`);
+    postMutation('gallery', { items: next, categories: galleryCategoriesRef.current }, `갤러리 추가: ${newItem.title}`, previous);
   };
 
   const updateGallery = async (id: string, updated: Partial<GalleryItem>) => {
+    // 사진 교체 등으로 더 이상 쓰이지 않게 된 이전 이미지 URL은 저장 성공
+    // 후 postMutation이 자동으로 Storage에서 정리합니다.
+    const previous = { items: galleryRef.current, categories: galleryCategoriesRef.current };
     const next = galleryRef.current.map((g) => (g.id === id ? { ...g, ...updated } : g));
     applyGallery(next);
-    postMutation('gallery', { items: next, categories: galleryCategoriesRef.current }, `갤러리 수정 (ID: ${id})`);
+    postMutation('gallery', { items: next, categories: galleryCategoriesRef.current }, `갤러리 수정 (ID: ${id})`, previous);
   };
 
   const deleteGallery = async (id: string) => {
     const target = galleryRef.current.find((g) => g.id === id);
     if (!target) throw new Error('삭제할 갤러리 항목을 찾을 수 없습니다.');
 
+    const previous = { items: galleryRef.current, categories: galleryCategoriesRef.current };
     const next = galleryRef.current.filter((g) => g.id !== id);
     applyGallery(next);
-    postMutation('gallery', { items: next, categories: galleryCategoriesRef.current }, `갤러리 삭제: ${target.title}`);
+    const saved = await postMutation('gallery', { items: next, categories: galleryCategoriesRef.current }, `갤러리 삭제: ${target.title}`, previous);
 
-    // Clean up Storage files. Legacy/manually-added photos with no
-    // storagePath (e.g. an admin who pasted an external URL) are never
-    // deleted from Storage since there's nothing there to delete.
+    // Firestore 삭제가 실제로 성공했을 때만 Storage 파일을 지웁니다. 저장이
+    // 실패했는데 먼저 파일을 지우면, 여전히 이 사진을 참조하는 문서가 깨진
+    // 이미지를 보여주게 됩니다. (참고: 위 postMutation에도 previous를
+    // 전달했으므로 이 사진의 URL은 어차피 자동으로도 정리되지만, storagePath
+    // 필드가 있는 경우 더 정확하게 대상을 특정할 수 있어 그대로 유지합니다.)
+    if (!saved) return;
     const paths = target.storagePaths && target.storagePaths.length > 0
       ? target.storagePaths
       : target.storagePath
@@ -873,38 +921,44 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // ── Partners CRUD ──
   const addPartner = (item: Omit<PartnerItem, 'id'>) => {
+    const previous = { items: partnersRef.current };
     const newItem: PartnerItem = { ...item, id: `partner-${Date.now()}` };
     const next = [...partnersRef.current, newItem].sort((a, b) => a.order - b.order);
     applyPartners(next);
-    postMutation('partners', { items: next }, `협력기관 추가: ${newItem.name}`);
+    postMutation('partners', { items: next }, `협력기관 추가: ${newItem.name}`, previous);
   };
   const updatePartner = (id: string, updated: Partial<PartnerItem>) => {
+    const previous = { items: partnersRef.current };
     const next = partnersRef.current.map((p) => (p.id === id ? { ...p, ...updated } : p));
     applyPartners(next);
-    postMutation('partners', { items: next }, `협력기관 수정 (ID: ${id})`);
+    postMutation('partners', { items: next }, `협력기관 수정 (ID: ${id})`, previous);
   };
   const deletePartner = (id: string) => {
+    const previous = { items: partnersRef.current };
     const next = partnersRef.current.filter((p) => p.id !== id);
     applyPartners(next);
-    postMutation('partners', { items: next }, `협력기관 삭제 (ID: ${id})`);
+    postMutation('partners', { items: next }, `협력기관 삭제 (ID: ${id})`, previous);
   };
 
   // ── Popups CRUD ──
   const addPopup = (item: Omit<PopupItem, 'id' | 'createdAt'>) => {
+    const previous = { items: popupsRef.current };
     const newItem: PopupItem = { ...item, id: `popup-${Date.now()}`, createdAt: new Date().toISOString() };
     const next = [newItem, ...popupsRef.current];
     applyPopups(next);
-    postMutation('popups', { items: next }, `팝업 추가: ${newItem.title}`);
+    postMutation('popups', { items: next }, `팝업 추가: ${newItem.title}`, previous);
   };
   const updatePopup = (id: string, updated: Partial<PopupItem>) => {
+    const previous = { items: popupsRef.current };
     const next = popupsRef.current.map((p) => (p.id === id ? { ...p, ...updated } : p));
     applyPopups(next);
-    postMutation('popups', { items: next }, `팝업 수정 (ID: ${id})`);
+    postMutation('popups', { items: next }, `팝업 수정 (ID: ${id})`, previous);
   };
   const deletePopup = (id: string) => {
+    const previous = { items: popupsRef.current };
     const next = popupsRef.current.filter((p) => p.id !== id);
     applyPopups(next);
-    postMutation('popups', { items: next }, `팝업 삭제 (ID: ${id})`);
+    postMutation('popups', { items: next }, `팝업 삭제 (ID: ${id})`, previous);
   };
 
   // ── Participations (협력 및 참여 신청) ──
@@ -977,16 +1031,33 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // ── Settings ──
-  const updateSettings = (newSettings: Partial<OrgSettings>) => {
+  // Promise<boolean>을 반환합니다 — 관리자 화면에서 실제 저장 성공/실패를
+  // 표시해야 하는 곳(예: SettingsTab의 섹션별 저장 버튼)은 이 값을 await해서
+  // 사용할 수 있고, 기존처럼 결과를 신경 쓰지 않는 호출부는 그대로 두어도
+  // 됩니다.
+  const updateSettings = (newSettings: Partial<OrgSettings>): Promise<boolean> => {
+    const previous = settings;
     const next = { ...settings, ...newSettings };
     setSettings(next);
-    postMutation('settings', next, '기본정보 수정');
+    return postMutation('settings', next, '기본정보 수정', previous);
   };
 
   const resetToDefaults = () => {
     // 콘텐츠(설정/사업/소식/갤러리/팝업/협력기관)만 초기화합니다.
     // 참여신청/문의는 각자 별도 컬렉션에 있으며 절대 이 초기화의 대상이
     // 아닙니다.
+    // 초기화로 되돌아가면서 더 이상 쓰이지 않게 되는, 관리자가 직접 업로드한
+    // Storage 이미지/첨부파일을 정리할 수 있도록 초기화 전 상태를 먼저
+    // 붙잡아 둡니다(기본 콘텐츠는 Storage가 아닌 /public 정적 이미지만
+    // 참조하므로, 초기화 후에는 이 URL들이 어디에도 남지 않습니다).
+    const previousSettings = settings;
+    const previousTimeline = { items: timelineRef.current };
+    const previousPrograms = { items: programsRef.current };
+    const previousNotices = { items: noticesRef.current };
+    const previousGallery = { items: galleryRef.current, categories: galleryCategoriesRef.current };
+    const previousPopups = { items: popupsRef.current };
+    const previousPartners = { items: partnersRef.current };
+
     setSettings(INITIAL_SETTINGS);
     applyTimeline(INITIAL_TIMELINE);
     applyPrograms(INITIAL_PROGRAMS);
@@ -995,13 +1066,13 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     applyGalleryCategories(INITIAL_GALLERY_CATEGORIES);
     applyPopups(INITIAL_POPUPS);
     applyPartners(INITIAL_PARTNERS);
-    postMutation('settings', INITIAL_SETTINGS, '초기화: 기본정보');
-    postMutation('timeline', { items: INITIAL_TIMELINE }, '초기화: 연혁');
-    postMutation('programs', { items: INITIAL_PROGRAMS }, '초기화: 사업');
-    postMutation('notices', { items: INITIAL_NOTICES }, '초기화: 소식');
-    postMutation('gallery', { items: INITIAL_GALLERY, categories: INITIAL_GALLERY_CATEGORIES }, '초기화: 갤러리');
-    postMutation('popups', { items: INITIAL_POPUPS }, '초기화: 팝업');
-    postMutation('partners', { items: INITIAL_PARTNERS }, '초기화: 협력기관');
+    postMutation('settings', INITIAL_SETTINGS, '초기화: 기본정보', previousSettings);
+    postMutation('timeline', { items: INITIAL_TIMELINE }, '초기화: 연혁', previousTimeline);
+    postMutation('programs', { items: INITIAL_PROGRAMS }, '초기화: 사업', previousPrograms);
+    postMutation('notices', { items: INITIAL_NOTICES }, '초기화: 소식', previousNotices);
+    postMutation('gallery', { items: INITIAL_GALLERY, categories: INITIAL_GALLERY_CATEGORIES }, '초기화: 갤러리', previousGallery);
+    postMutation('popups', { items: INITIAL_POPUPS }, '초기화: 팝업', previousPopups);
+    postMutation('partners', { items: INITIAL_PARTNERS }, '초기화: 협력기관', previousPartners);
   };
 
   return (

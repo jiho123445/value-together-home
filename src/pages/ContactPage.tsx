@@ -4,6 +4,7 @@ import { PageBanner } from '../components/common/PageBanner';
 import { InquiryType } from '../types';
 import { HONEYPOT_FIELD_NAME, honeypotStyle, isLikelyBot, checkRateLimit } from '../utils/spamGuard';
 import { isPlaceholderAddress } from '../utils/orgInfo';
+import { isSafeHttpUrl } from '../utils/safeUrl';
 import { MapPin, Phone, Mail, Clock, CheckCircle2 } from 'lucide-react';
 
 const TYPES: InquiryType[] = ['일반문의', '사업문의', '협력문의'];
@@ -68,7 +69,7 @@ export const ContactPage: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14 grid lg:grid-cols-5 gap-10">
         <div className="lg:col-span-2 space-y-6">
           <div className="aspect-video rounded-2xl overflow-hidden border border-line bg-paper-soft">
-            {settings.mapEmbedUrl ? (
+            {isSafeHttpUrl(settings.mapEmbedUrl) ? (
               <iframe src={settings.mapEmbedUrl} title="오시는 길 지도" className="w-full h-full border-0" loading="lazy" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-ink-soft/50 text-xs font-bold">

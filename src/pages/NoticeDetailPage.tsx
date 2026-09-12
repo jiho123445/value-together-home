@@ -4,6 +4,7 @@ import { AttachmentPreviewModal } from '../components/common/AttachmentPreviewMo
 import { isAttachmentPreviewable } from '../utils/attachmentPreview';
 import { downloadNoticeFile } from '../utils/download';
 import { NoticeAttachment } from '../types';
+import { isSafeHttpUrl } from '../utils/safeUrl';
 import { ChevronLeft, Eye, Download, Paperclip, ExternalLink } from 'lucide-react';
 
 /**
@@ -47,7 +48,7 @@ export const NoticeDetailPage: React.FC = () => {
 
         <div className="text-ink text-sm leading-relaxed whitespace-pre-wrap">{notice.content}</div>
 
-        {notice.category === '보도자료' && notice.externalUrl && (
+        {notice.category === '보도자료' && isSafeHttpUrl(notice.externalUrl) && (
           <a
             href={notice.externalUrl}
             target="_blank"

@@ -70,7 +70,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({ label, value
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
       />
