@@ -36,13 +36,13 @@ export const NewsPage: React.FC = () => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5 sm:gap-3">
             {CATEGORIES.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setNoticeCategory(c)}
-                className={`px-3.5 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors ${
+                className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-colors ${
                   noticeCategory === c ? 'bg-primary text-primary-ink' : 'bg-paper-card border border-line text-ink-soft hover:text-ink'
                 }`}
               >

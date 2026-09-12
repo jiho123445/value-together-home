@@ -20,13 +20,13 @@ export const AboutPage: React.FC = () => {
       <PageBanner eyebrow="ABOUT" title="가치함께 소개" description="사회적협동조합 가치함께를 소개합니다." />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <div className="flex flex-wrap gap-2 border-b border-line mb-10 pb-1">
+        <div className="flex flex-wrap gap-2 sm:gap-3 border-b border-line mb-10 pb-1">
           {SUB_TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setAboutSubTab(tab.key)}
-              className={`px-4 py-2.5 rounded-t-xl text-sm font-bold transition-colors ${
+              className={`px-5 sm:px-7 py-3 sm:py-4 rounded-t-xl text-base sm:text-lg font-bold transition-colors ${
                 aboutSubTab === tab.key ? 'text-primary-ink bg-primary-soft' : 'text-ink-soft hover:text-ink'
               }`}
             >
@@ -55,11 +55,11 @@ export const AboutPage: React.FC = () => {
           <div className="space-y-8">
             <div className="space-y-2">
               <h2 className="font-bold text-ink text-lg">설립 목적</h2>
-              <p className="text-sm text-ink-soft leading-relaxed whitespace-pre-line">{settings.purposeStatement}</p>
+              <p className="text-base sm:text-lg text-ink leading-relaxed whitespace-pre-line">{settings.purposeStatement}</p>
             </div>
             <div className="space-y-2">
               <h2 className="font-bold text-ink text-lg">조합 소개</h2>
-              <p className="text-sm text-ink-soft leading-relaxed whitespace-pre-line">{settings.introStatement}</p>
+              <p className="text-base sm:text-lg text-ink leading-relaxed whitespace-pre-line">{settings.introStatement}</p>
             </div>
             <dl className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-line text-sm">
               <div className="flex justify-between gap-3 border-b border-line/60 py-2">
@@ -90,9 +90,9 @@ export const AboutPage: React.FC = () => {
                       )}
                       {item.isMilestone && <Milestone className="w-3.5 h-3.5 text-primary" />}
                     </div>
-                    <p className="font-bold text-ink text-sm mt-1">{item.title}</p>
-                    {item.subtitle && <p className="text-xs text-ink-soft italic">{item.subtitle}</p>}
-                    <p className="text-xs text-ink-soft leading-relaxed mt-1 whitespace-pre-line">{item.description}</p>
+                    <p className="font-bold text-ink text-base sm:text-lg mt-1">{item.title}</p>
+                    {item.subtitle && <p className="text-sm sm:text-base text-ink-soft italic">{item.subtitle}</p>}
+                    <p className="text-base sm:text-lg text-ink-soft leading-relaxed mt-1 whitespace-pre-line">{item.description}</p>
                   </li>
                 ))}
               </ol>
@@ -108,9 +108,9 @@ export const AboutPage: React.FC = () => {
             <div className="grid sm:grid-cols-2 gap-3">
               {[...settings.orgChart].sort((a, b) => a.order - b.order).map((item) => (
                 <div key={item.id} className="bg-paper-card border border-line rounded-2xl p-5">
-                  <p className="font-bold text-ink text-sm">{item.department}</p>
-                  {item.role && <p className="text-xs text-primary-ink font-bold mt-0.5">{item.role}</p>}
-                  {item.description && <p className="text-xs text-ink-soft mt-1.5">{item.description}</p>}
+                  <p className="font-bold text-ink text-base sm:text-lg">{item.department}</p>
+                  {item.role && <p className="text-sm sm:text-base text-primary-ink font-bold mt-0.5">{item.role}</p>}
+                  {item.description && <p className="text-base sm:text-lg text-ink-soft mt-1.5">{item.description}</p>}
                 </div>
               ))}
             </div>
@@ -125,8 +125,8 @@ export const AboutPage: React.FC = () => {
             <div className="space-y-3">
               {settings.operatingPrinciples.map((p) => (
                 <div key={p.id} className="bg-paper-card border border-line rounded-2xl p-5">
-                  <p className="font-bold text-ink text-sm">{p.title}</p>
-                  <p className="text-xs text-ink-soft mt-1 leading-relaxed">{p.description}</p>
+                  <p className="font-bold text-ink text-base sm:text-lg">{p.title}</p>
+                  <p className="text-base sm:text-lg text-ink-soft mt-1 leading-relaxed">{p.description}</p>
                 </div>
               ))}
             </div>

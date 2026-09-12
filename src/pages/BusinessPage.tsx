@@ -20,13 +20,13 @@ export const BusinessPage: React.FC = () => {
       <PageBanner eyebrow="OUR BUSINESS" title="주요사업" description="가치함께가 지역사회와 함께 운영하는 사업을 소개합니다." />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5 sm:gap-3">
           {CATEGORIES.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setCategory(c)}
-              className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors ${
+              className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-colors ${
                 category === c ? 'bg-primary text-primary-ink' : 'bg-paper-card border border-line text-ink-soft hover:text-ink'
               }`}
             >

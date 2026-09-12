@@ -27,13 +27,13 @@ export const GalleryPage: React.FC = () => {
       <PageBanner eyebrow="GALLERY" title="활동갤러리" description="가치함께의 다양한 활동 현장을 사진으로 소개합니다." />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5 sm:gap-3">
           {['전체', ...galleryCategories].map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setCategory(c)}
-              className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors ${
+              className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-colors ${
                 category === c ? 'bg-primary text-primary-ink' : 'bg-paper-card border border-line text-ink-soft hover:text-ink'
               }`}
             >
