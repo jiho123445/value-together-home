@@ -43,18 +43,18 @@ export const Header: React.FC = () => {
         scrolled ? 'border-line shadow-sm' : 'border-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-20 sm:h-[98px] flex items-center justify-between gap-3 lg:gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 h-24 sm:h-[136px] flex items-center justify-between gap-4 lg:gap-10">
         <button type="button" onClick={() => setActiveTab('main')} className="shrink-0 transition-transform hover:scale-[1.02]" aria-label="홈으로 이동">
           <Logo size="header" />
         </button>
 
-        <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="주요 메뉴">
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-2 flex-1 justify-center" aria-label="주요 메뉴">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.tab}
               type="button"
               onClick={() => setActiveTab(item.tab)}
-              className={`px-3.5 xl:px-4 py-2.5 rounded-xl text-[17px] xl:text-[18px] transition-all whitespace-nowrap ${
+              className={`px-4 xl:px-5 py-3 rounded-xl text-[18px] xl:text-[19px] transition-all whitespace-nowrap ${
                 currentTop === item.tab
                   ? 'text-primary-ink bg-primary-soft font-black shadow-xs'
                   : 'text-ink/85 hover:text-ink hover:bg-paper-soft font-extrabold'
@@ -69,7 +69,7 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('contact')}
-            className="px-3.5 py-2 rounded-xl bg-primary text-primary-ink text-[15px] font-extrabold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-90 transition-opacity whitespace-nowrap"
+            className="px-5 py-2.5 rounded-xl bg-primary text-primary-ink text-base font-extrabold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-90 transition-opacity whitespace-nowrap"
           >
             <span>문의하기</span>
           </button>

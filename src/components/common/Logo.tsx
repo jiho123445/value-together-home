@@ -9,7 +9,7 @@ interface LogoProps {
 }
 
 const SIZE_MAP: Record<NonNullable<LogoProps['size']>, { mark: string; word: string; sub: string }> = {
-  header: { mark: 'h-14 w-14 sm:h-[64px] sm:w-[64px]', word: 'text-2xl sm:text-[28px]', sub: 'text-xs sm:text-[13px]' },
+  header: { mark: 'h-16 w-16 sm:h-[88px] sm:w-[88px] lg:h-[104px] lg:w-[104px]', word: 'text-3xl sm:text-4xl lg:text-[44px]', sub: 'text-xs sm:text-sm lg:text-base' },
   hero: { mark: 'h-16 w-16 sm:h-20 sm:w-20', word: 'text-3xl sm:text-4xl', sub: 'text-xs sm:text-sm' },
   footer: { mark: 'h-8 w-8', word: 'text-base', sub: 'text-[11px]' },
 };
@@ -25,7 +25,7 @@ const SIZE_MAP: Record<NonNullable<LogoProps['size']>, { mark: string; word: str
 export const Logo: React.FC<LogoProps> = ({ size = 'header', withWordmark = true, className = '' }) => {
   const s = SIZE_MAP[size];
   return (
-    <span className={`inline-flex items-center gap-3 sm:gap-3.5 ${className}`}>
+    <span className={`inline-flex items-center gap-3 sm:gap-4 lg:gap-5 ${className}`}>
       <img src="/logo-mark.png" alt="" aria-hidden="true" className={`${s.mark} object-contain shrink-0`} />
       {withWordmark && (
         <span className="flex flex-col leading-tight">

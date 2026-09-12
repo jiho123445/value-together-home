@@ -36,12 +36,12 @@ export const CoreValuesSection: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6">
           {settings.coreValues.map((value) => {
             const imgSrc = getCoreValueImage(value);
             return (
               <div key={value.id} className="flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border border-line bg-paper-soft">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-3xl overflow-hidden shrink-0 border border-line bg-paper-soft shadow-sm">
                   <img
                     src={getImageUrl(imgSrc)}
                     alt={value.title}
