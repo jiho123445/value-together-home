@@ -133,17 +133,57 @@ gachihamkke/
 
 ## 5-1. 관리자 2단계 인증(MFA) 설정 방법
 
-관리자 계정 하나에 사이트 전체의 콘텐츠 수정·삭제 권한과 문의/참여신청 개인정보 열람 권한이 몰려 있으므로, 비밀번호가 어딘가에서 유출되더라도 로그인을 한 번 더 막아주는 2단계 인증(TOTP, 인증 앱 기반)을 설정해 두는 것을 강력히 권장합니다. 코드에는 이미 등록/로그인 연동이 준비되어 있습니다(`src/admin/tabs/SecurityTab.tsx`, `src/admin/AdminLogin.tsx`) — Firebase Console에서 기능을 한 번 켜기만 하면 됩니다.
+현재 조합의 관리자 계정은 홈페이지 전체 콘텐츠와 문의/참여신청을 관리하므로, **관리자 1명 수준에서 필요한 최소한의 추가 보호**로 TOTP(인증 앱) 2단계 인증을 사용합니다. SMS MFA나 별도의 외부 QR 서비스는 사용하지 않습니다.
 
-1. [Firebase Console](https://console.firebase.google.com/) > Authentication > **Sign-in method**(또는 **Settings**) 탭으로 이동합니다.
-2. 페이지 아래쪽에서 **"다단계 인증(Multi-factor authentication)"** 항목을 찾아 **TOTP(인증 앱)** 방식을 활성화합니다. (화면 구성은 Firebase 업데이트에 따라 조금씩 달라질 수 있습니다 — 안 보이면 스크린샷 보여주시면 같이 찾아드릴게요.)
-3. 관리자 계정으로 사이트에 로그인 → 관리자 화면 좌측 메뉴의 **"보안"** 탭으로 이동.
-4. **"2단계 인증 설정 시작"** 클릭 → 화면에 나오는 **설정 키**를 Google OTP/Microsoft Authenticator/Authy 등 인증 앱에 "직접 입력(수동 입력)"으로 등록 → 앱에 표시되는 6자리 코드를 입력해 등록 완료.
-5. 등록이 끝나면 다음 로그인부터는 비밀번호 입력 후 인증 앱의 6자리 코드까지 입력해야 로그인됩니다.
+### 1) Firebase에서 Identity Platform 업그레이드
 
-**주의 — 인증 기기를 분실하면 스스로 해제할 방법이 없습니다.** (로그인이 막히기 때문에 "보안" 탭에도 들어갈 수 없습니다.) 이를 대비해:
-- 가능하면 예비 기기(예: 본인 명의의 다른 휴대폰)에도 "인증 앱 추가 등록"으로 하나 더 등록해 두세요.
-- 그래도 두 기기를 모두 잃어버린 경우, Firebase Console 또는 Firebase Admin SDK를 통해 해당 계정의 2단계 인증을 강제로 해제해야 합니다 — 이런 상황이 생기면 말씀해 주시면 복구를 도와드리겠습니다.
+Firebase Console > Authentication에서 **Identity Platform 업그레이드**를 완료합니다. 현재 프로젝트는 이 단계가 완료된 상태입니다.
+
+### 2) 프로젝트에서 TOTP 한 번만 활성화
+
+TOTP는 현재 Firebase Console의 SMS MFA 버튼으로 켜는 기능이 아닙니다. Google 공식 문서 기준으로 **Admin SDK 또는 Identity Platform REST API**로 프로젝트 수준에서 TOTP를 활성화합니다.
+
+가장 간단한 방법은 Google Cloud Shell에서 아래 명령을 한 번 실행하는 것입니다. Cloud Shell에는 `gcloud`가 이미 준비되어 있습니다.
+
+```bash
+curl -X PATCH "https://identitytoolkit.googleapis.com/admin/v2/projects/value-together-home/config?updateMask=mfa" \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  -H "X-Goog-User-Project: value-together-home" \
+  -d '{
+    "mfa": {
+      "providerConfigs": [{
+        "state": "ENABLED",
+        "totpProviderConfig": {
+          "adjacentIntervals": 5
+        }
+      }]
+    }
+  }'
+```
+
+`adjacentIntervals`는 인증 앱과 서버의 시간 차이를 허용하는 값이며, 5는 Google 공식 문서의 기본값입니다.
+
+### 3) 관리자 화면에서 인증 앱 등록
+
+1. 관리자 계정으로 홈페이지에 로그인합니다.
+2. 관리자 메뉴의 **보안**을 선택합니다.
+3. **2단계 인증 설정 시작**을 누릅니다.
+4. 현재 관리자 비밀번호를 한 번 더 입력합니다.
+5. 화면에 표시되는 **설정 키**를 Google Authenticator 또는 Microsoft Authenticator 등의 인증 앱에 **수동 입력**으로 등록합니다.
+6. 앱에 표시되는 6자리 코드를 입력하고 **등록 완료**를 누릅니다.
+
+등록이 끝나면 다음 로그인부터 **비밀번호 + 6자리 인증 코드**가 필요합니다.
+
+### 4) 인증 앱을 하나 더 등록할 필요가 있을 때
+
+현재 관리자 규모에서는 예비 휴대폰이 있다면 인증 앱을 하나 더 등록해 두는 정도면 충분합니다. 별도의 복구 서버나 복잡한 백업 시스템은 현재 범위에서 구축하지 않습니다.
+
+### 5) 인증 앱 해제
+
+해제할 때도 현재 관리자 비밀번호를 한 번 더 확인하도록 되어 있습니다. 해제하면 다음 로그인부터 비밀번호만으로 로그인하게 되므로, 필요할 때만 사용하세요.
+
+> **주의:** 인증 앱을 등록한 휴대폰을 분실하고 예비 기기도 없다면 관리자 계정의 MFA 복구가 필요할 수 있습니다. 이런 경우 Firebase/Identity Platform의 관리자 기능을 이용해 복구해야 합니다.
 
 ## 6. 환경변수 설정
 

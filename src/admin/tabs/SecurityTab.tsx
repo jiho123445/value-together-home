@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { multiFactor, TotpMultiFactorGenerator, type TotpSecret, type MultiFactorInfo } from 'firebase/auth';
+import {
+  EmailAuthProvider,
+  multiFactor,
+  reauthenticateWithCredential,
+  TotpMultiFactorGenerator,
+  type TotpSecret,
+  type MultiFactorInfo,
+} from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { ShieldCheck, ShieldAlert, KeyRound, Loader2, Trash2, Copy, Check } from 'lucide-react';
 
@@ -15,11 +22,13 @@ import { ShieldCheck, ShieldAlert, KeyRound, Loader2, Trash2, Copy, Check } from
  * 만들지 않기 위해서입니다. 대신 모든 표준 인증 앱이 지원하는 "수동 키
  * 입력" 방식만 사용합니다.
  *
- * 사전 조건: Firebase Console > Authentication > Sign-in method(또는
- * Settings)에서 "다단계 인증(Multi-factor authentication)"의 TOTP/
- * 인증 앱 옵션을 먼저 활성화해야 합니다. 활성화하지 않은 상태에서
- * "설정 시작"을 누르면 Firebase가 auth/operation-not-allowed 에러를
- * 반환합니다.
+ * 사전 조건: Firebase Authentication을 Identity Platform으로 업그레이드한 뒤
+ * 프로젝트 수준에서 TOTP MFA를 한 번 활성화해야 합니다. 실제 활성화 방법은
+ * README의 5-1 절을 따릅니다.
+ *
+ * 등록/해제처럼 관리자 계정의 보안 상태를 바꾸는 작업은 현재 로그인 세션만
+ * 믿지 않고 관리자 비밀번호를 한 번 더 확인합니다. 이 정도의 재인증만으로
+ * 현재 조합 규모에서 필요한 관리자 보호 수준을 확보합니다.
  */
 
 type Step = 'idle' | 'generating' | 'awaiting-code' | 'enrolling';
@@ -33,6 +42,9 @@ export const SecurityTab: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [removingUid, setRemovingUid] = useState<string | null>(null);
+  const [reauthMode, setReauthMode] = useState<'enroll' | 'remove' | null>(null);
+  const [reauthPassword, setReauthPassword] = useState('');
+  const [reauthenticating, setReauthenticating] = useState(false);
 
   const refreshFactors = () => {
     if (!user) return;
@@ -48,10 +60,29 @@ export const SecurityTab: React.FC = () => {
     return <p className="text-sm text-ink-soft">로그인 정보를 불러오는 중입니다...</p>;
   }
 
-  const startEnrollment = async () => {
+  const startEnrollment = () => {
     setError(null);
-    setStep('generating');
+    if (!user.emailVerified) {
+      setError('관리자 이메일 인증이 완료된 계정에서만 2단계 인증을 설정할 수 있습니다. 먼저 Firebase에서 이메일을 인증해 주세요.');
+      return;
+    }
+    setReauthPassword('');
+    setReauthMode('enroll');
+  };
+
+  const beginEnrollmentAfterReauth = async () => {
+    setReauthenticating(true);
+    setError(null);
     try {
+      if (!reauthPassword) {
+        setError('현재 관리자 비밀번호를 입력해 주세요.');
+        return;
+      }
+      const credential = EmailAuthProvider.credential(user.email || '', reauthPassword);
+      await reauthenticateWithCredential(user, credential);
+      setReauthPassword('');
+      setReauthMode(null);
+      setStep('generating');
       const session = await multiFactor(user).getSession();
       const secret = await TotpMultiFactorGenerator.generateSecret(session);
       setTotpSecret(secret);
@@ -60,10 +91,12 @@ export const SecurityTab: React.FC = () => {
       console.error(err);
       setError(
         err?.code === 'auth/operation-not-allowed'
-          ? 'Firebase Console에서 TOTP 다단계 인증이 아직 활성화되어 있지 않습니다. Authentication > Sign-in method(또는 Settings)에서 먼저 활성화해 주세요.'
-          : '2단계 인증 설정을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+          ? 'Firebase에서 TOTP MFA가 아직 활성화되지 않았습니다. README의 5-1 절에 있는 프로젝트 활성화 절차를 먼저 진행해 주세요.'
+          : '관리자 비밀번호가 올바르지 않거나 2단계 인증 설정을 시작하지 못했습니다.'
       );
       setStep('idle');
+    } finally {
+      setReauthenticating(false);
     }
   };
 
@@ -95,7 +128,7 @@ export const SecurityTab: React.FC = () => {
     setStep('idle');
   };
 
-  const removeFactor = async (factor: MultiFactorInfo) => {
+  const removeFactor = (factor: MultiFactorInfo) => {
     if (
       !confirm(
         `"${factor.displayName || '등록된 인증 수단'}"을(를) 해제하시겠습니까? 해제하면 다음 로그인부터 2단계 인증 없이 비밀번호만으로 로그인할 수 있게 됩니다.`
@@ -103,14 +136,41 @@ export const SecurityTab: React.FC = () => {
     ) {
       return;
     }
+    setError(null);
+    setReauthPassword('');
+    setReauthMode('remove');
     setRemovingUid(factor.uid);
+  };
+
+  const completeRemovalAfterReauth = async () => {
+    if (!reauthMode || !removingUid) return;
+    setReauthenticating(true);
+    setError(null);
     try {
+      if (!reauthPassword) {
+        setError('현재 관리자 비밀번호를 입력해 주세요.');
+        return;
+      }
+      const credential = EmailAuthProvider.credential(user.email || '', reauthPassword);
+      await reauthenticateWithCredential(user, credential);
+      const factor = multiFactor(user).enrolledFactors.find((item) => item.uid === removingUid);
+      if (!factor) {
+        setError('해제할 인증 수단을 찾을 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.');
+        return;
+      }
       await multiFactor(user).unenroll(factor);
       refreshFactors();
-    } catch (err) {
+      setReauthPassword('');
+      setReauthMode(null);
+    } catch (err: any) {
       console.error(err);
-      alert('해제하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      setError(
+        err?.code === 'auth/user-token-expired'
+          ? '보안 상태가 만료되었습니다. 로그아웃 후 다시 로그인한 다음 해제를 다시 시도해 주세요.'
+          : '관리자 비밀번호가 올바르지 않거나 인증 수단을 해제하지 못했습니다.'
+      );
     } finally {
+      setReauthenticating(false);
       setRemovingUid(null);
     }
   };
@@ -127,7 +187,62 @@ export const SecurityTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <>
+      {reauthMode && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (reauthMode === 'enroll') beginEnrollmentAfterReauth();
+              else completeRemovalAfterReauth();
+            }}
+            className="w-full max-w-sm bg-paper-card rounded-2xl border border-line shadow-2xl p-5 space-y-4"
+          >
+            <div>
+              <h3 className="font-bold text-ink">관리자 확인</h3>
+              <p className="text-xs text-ink-soft mt-1">
+                {reauthMode === 'enroll'
+                  ? '2단계 인증을 설정하기 전에 현재 관리자 비밀번호를 한 번 더 확인합니다.'
+                  : '2단계 인증을 해제하기 전에 현재 관리자 비밀번호를 한 번 더 확인합니다.'}
+              </p>
+            </div>
+            <input
+              type="password"
+              value={reauthPassword}
+              onChange={(e) => setReauthPassword(e.target.value)}
+              autoFocus
+              autoComplete="current-password"
+              placeholder="현재 관리자 비밀번호"
+              className="w-full px-4 py-3 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+            />
+            {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={reauthenticating}
+                className="flex-1 py-3 rounded-xl bg-ink text-white text-sm font-bold disabled:opacity-50"
+              >
+                {reauthenticating ? '확인 중...' : '확인'}
+              </button>
+              <button
+                type="button"
+                disabled={reauthenticating}
+                onClick={() => {
+                  setReauthPassword('');
+                  setReauthMode(null);
+                  setRemovingUid(null);
+                  setError(null);
+                }}
+                className="px-4 py-3 rounded-xl border border-line text-ink-soft text-sm font-bold disabled:opacity-50"
+              >
+                취소
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="space-y-6 max-w-2xl">
       <div>
         <h2 className="font-bold text-ink text-lg">보안 — 관리자 2단계 인증</h2>
         <p className="text-xs text-ink-soft mt-1">
@@ -247,6 +362,7 @@ export const SecurityTab: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
