@@ -34,6 +34,23 @@
   }
 }
 
+
+/* 활동갤러리 미리보기: 대표 1열 + 동일 폭의 우측 2열.
+   minmax(0, 1fr)을 사용해 제목 길이/이미지의 intrinsic width가
+   CSS Grid 트랙 폭을 밀어내지 않도록 고정한다. */
+.gallery-preview-grid {
+  width: 100%;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .gallery-preview-grid {
+    grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
 /* Custom scrollbar (warm-neutral tones matching the palette) */
 ::-webkit-scrollbar {
   width: 8px;

@@ -18,7 +18,7 @@ const GalleryTile: React.FC<GalleryTileProps> = ({ item, aspect, textSize, onOpe
     <button
       type="button"
       onClick={() => onOpen(item)}
-      className={`group relative rounded-2xl overflow-hidden text-left shadow-sm hover:shadow-lg transition-shadow ${aspect}`}
+      className={`group relative block w-full min-w-0 rounded-2xl overflow-hidden text-left shadow-sm hover:shadow-lg transition-shadow ${aspect}`}
     >
       <img
         src={photoSrc}
@@ -57,9 +57,9 @@ export const GalleryPreviewSection: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr] lg:grid-rows-2 gap-4 sm:gap-5 lg:gap-6 lg:h-[560px]">
+        <div className="gallery-preview-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-rows-2 lg:h-[560px]">
           {/* 첫 번째 카드는 활동 대표 이미지로 넓게 배치하고 2개 행을 차지합니다. */}
-          <div className="sm:col-span-2 lg:col-span-1 lg:row-span-2 min-h-[320px] lg:min-h-0">
+          <div className="sm:col-span-2 lg:col-span-1 lg:row-span-2 min-w-0 min-h-[320px] lg:min-h-0">
             <GalleryTile
               item={feature}
               aspect="h-full min-h-[320px] lg:min-h-0"
@@ -71,7 +71,7 @@ export const GalleryPreviewSection: React.FC = () => {
 
           {/* 오른쪽 4개 카드는 동일한 크기와 동일한 간격으로 균등 배치합니다. */}
           {restItems.map((item) => (
-            <div key={item.id} className="min-h-[220px] lg:min-h-0">
+            <div key={item.id} className="min-w-0 min-h-[220px] lg:min-h-0">
               <GalleryTile
                 item={item}
                 aspect="h-full min-h-[220px] lg:min-h-0"
