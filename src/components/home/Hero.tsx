@@ -64,6 +64,9 @@ export const Hero: React.FC = () => {
                 src={getImageUrl(settings.heroImageUrl)}
                 alt={settings.name}
                 className="absolute inset-0 w-full h-full object-cover"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-secondary-ink/60">

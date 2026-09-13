@@ -21,27 +21,79 @@
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../lib/firebase';
 
-const generateFileName = (originalName: string): string => {
-  const ext = originalName.includes('.') ? originalName.split('.').pop() : 'bin';
+const generateFileName = (extension = 'webp'): string => {
   const unique = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-  return `${unique}.${ext}`;
+  return `${unique}.${extension}`;
 };
 
+const MAX_IMAGE_DIMENSION = 2000;
+const WEBP_QUALITY = 0.82;
+
 /**
- * 압축된 이미지(Blob)를 Cloud Storage에 업로드하고 다운로드 URL을 반환한다.
- * @param blob 업로드할 이미지 데이터 (canvas.toBlob() 등의 결과)
+ * Resize/compress browser images before they reach Firebase Storage.
+ *
+ * A unique filename is generated for every upload, so immutable caching is
+ * safe: replacing an image creates a new URL while repeat visits can reuse
+ * the existing image from cache.
+ */
+async function optimizeImage(file: Blob): Promise<Blob> {
+  if (!file.type.startsWith('image/')) return file;
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+
+    // Avoid an unnecessary re-encode for already-small images.
+    if (bitmap.width <= MAX_IMAGE_DIMENSION && bitmap.height <= MAX_IMAGE_DIMENSION && file.size <= 350 * 1024) {
+      bitmap.close();
+      return file;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      bitmap.close();
+      return file;
+    }
+
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+
+    const webp = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, 'image/webp', WEBP_QUALITY);
+    });
+
+    return webp && webp.size > 0 && webp.size < file.size ? webp : file;
+  } catch {
+    // Older/blocked browser image APIs should never break an upload.
+    return file;
+  }
+}
+
+/**
+ * 이미지를 브라우저에서 적정 크기로 최적화한 뒤 Cloud Storage에 업로드하고
+ * 다운로드 URL을 반환한다. 원본이 이미 작으면 불필요한 재인코딩을 하지 않는다.
+ * @param blob 업로드할 이미지 데이터
  * @param folder Storage 상위 폴더 (예: 'gallery', 'settings', 'popups')
  * @param originalName 원본 파일명 (확장자 추출용)
  */
 export async function uploadImageBlob(
   blob: Blob,
   folder: string,
-  originalName: string = 'image.jpg'
+  _originalName: string = 'image.jpg'
 ): Promise<string> {
-  const fileName = generateFileName(originalName);
+  const optimized = await optimizeImage(blob);
+  const isWebp = optimized.type === 'image/webp';
+  const extension = isWebp ? 'webp' : (optimized.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+  const fileName = generateFileName(extension);
   const storageRef = ref(storage, `${folder}/${fileName}`);
-  const snapshot = await uploadBytes(storageRef, blob, {
-    contentType: blob.type || 'image/jpeg',
+  const snapshot = await uploadBytes(storageRef, optimized, {
+    contentType: optimized.type || 'image/jpeg',
+    cacheControl: 'public,max-age=31536000,immutable',
   });
   return await getDownloadURL(snapshot.ref);
 }

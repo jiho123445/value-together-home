@@ -8,27 +8,19 @@ describe('formatImageUrl', () => {
     expect(formatImageUrl(123)).toBe('');
   });
 
-  it('passes data URLs through unchanged (no cache-busting needed)', () => {
+  it('passes data URLs through unchanged', () => {
     const dataUrl = 'data:image/png;base64,AAAA';
     expect(formatImageUrl(dataUrl)).toBe(dataUrl);
   });
 
-  it('appends a provided version as a cache-busting query param', () => {
-    expect(formatImageUrl('/uploads/photo.jpg', 42)).toBe('/uploads/photo.jpg?v=42');
+  it('keeps normal URLs unchanged so browser/CDN caching can work', () => {
+    expect(formatImageUrl('/uploads/photo.jpg', 42)).toBe('/uploads/photo.jpg');
+    expect(formatImageUrl('/static/logo.png', 7)).toBe('/static/logo.png');
   });
 
-  it('strips an existing query string before adding the new version', () => {
-    expect(formatImageUrl('/uploads/photo.jpg?v=1', 42)).toBe('/uploads/photo.jpg?v=42');
-  });
-
-  it('adds ?v= to any root-relative path, not just /uploads or /api/image', () => {
-    expect(formatImageUrl('/static/logo.png', 7)).toBe('/static/logo.png?v=7');
-  });
-
-  it('appends with & when a full external URL already has query params', () => {
-    expect(formatImageUrl('https://cdn.example.com/img.png?x=1', 7)).toBe(
-      'https://cdn.example.com/img.png?x=1&v=7'
-    );
+  it('preserves Firebase signed download URLs and their query parameters', () => {
+    const url = 'https://firebasestorage.googleapis.com/v0/b/example/o/photo.jpg?alt=media&token=abc123';
+    expect(formatImageUrl(url, 42)).toBe(url);
   });
 });
 
@@ -42,8 +34,7 @@ describe('getImageApiFallbackUrl', () => {
     expect(getImageApiFallbackUrl(dataUrl)).toBe(dataUrl);
   });
 
-  it('rewrites an /uploads/ path to the /api/image/ fallback route', () => {
-    const result = getImageApiFallbackUrl('/uploads/photo.jpg?v=1');
-    expect(result).toMatch(/^\/api\/image\/photo\.jpg\?v=\d+$/);
+  it('rewrites an /uploads/ path without a changing cache-busting parameter', () => {
+    expect(getImageApiFallbackUrl('/uploads/photo.jpg?v=1')).toBe('/api/image/photo.jpg');
   });
 });

@@ -93,7 +93,6 @@ interface ValueTogetherContextType {
   logPageview: (path: string) => void;
   refreshData: () => Promise<void>;
   isSyncing: boolean;
-  syncTimestamp: number;
   getImageUrl: (url?: string) => string;
   debugLogs: DebugLog[];
   syncStatus: 'idle' | 'syncing' | 'success' | 'error';
@@ -521,7 +520,6 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
-  const [syncTimestamp, setSyncTimestamp] = useState<number>(() => Date.now());
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
 
   const addDebugLog = useCallback((type: DebugLog['type'], message: string, details?: string) => {
@@ -529,7 +527,7 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     setDebugLogs((prev) => [{ id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, time, type, message, details }, ...prev.slice(0, 49)]);
   }, []);
   const clearDebugLogs = useCallback(() => setDebugLogs([]), []);
-  const getImageUrl = useCallback((url?: string) => formatImageUrl(url, syncTimestamp), [syncTimestamp]);
+  const getImageUrl = useCallback((url?: string) => formatImageUrl(url), []);
 
   // Live subscription to public content (`content/*` documents)
   useEffect(() => {
@@ -559,8 +557,6 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         if (Array.isArray(byId['popups']?.items)) applyPopups(byId['popups'].items);
         if (Array.isArray(byId['partners']?.items)) applyPartners(byId['partners'].items);
 
-        const now = Date.now();
-        setSyncTimestamp(now);
         setLastSyncTime(new Date().toLocaleTimeString('ko-KR'));
         setSyncStatus('success');
         setSyncError(null);
@@ -667,7 +663,6 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         if (Array.isArray(byId['gallery']?.items)) applyGallery(byId['gallery'].items);
         if (Array.isArray(byId['popups']?.items)) applyPopups(byId['popups'].items);
         if (Array.isArray(byId['partners']?.items)) applyPartners(byId['partners'].items);
-        setSyncTimestamp(Date.now());
         setLastSyncTime(new Date().toLocaleTimeString('ko-KR'));
         addDebugLog('success', 'Firestore에서 최신 데이터를 새로고침했습니다.');
       }
@@ -750,8 +745,7 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       return Promise.race([writePromise, timeoutPromise])
         .then(() => {
           addDebugLog('success', `[저장 완료] ${actionName}`);
-          setSyncTimestamp(Date.now());
-          setSyncStatus('success');
+            setSyncStatus('success');
           setSyncError(null);
           writeAuditLog(docName, actionName);
           if (previousPayload !== undefined) {
@@ -1125,7 +1119,6 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         logPageview,
         refreshData,
         isSyncing,
-        syncTimestamp,
         getImageUrl,
         debugLogs,
         syncStatus,
