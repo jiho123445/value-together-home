@@ -15,7 +15,7 @@ export const GovernancePage: React.FC = () => {
 
   return <div>
     <PageBanner eyebrow="GOVERNANCE" title="투명경영" description="정관과 관련 규정에 따라 조합의 운영 정보를 투명하게 공개합니다." />
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-12">
       <section className="grid md:grid-cols-3 gap-4">
         <InfoCard icon={Scale} title="정관·규정" text="조합의 목적과 운영 원칙, 조합원의 권리와 의무를 확인할 수 있습니다." />
         <InfoCard icon={Landmark} title="총회·이사회" text="주요 의사결정과 활동 내용을 공개 가능한 범위에서 확인할 수 있습니다." />
@@ -23,8 +23,10 @@ export const GovernancePage: React.FC = () => {
       </section>
 
       <section className="space-y-5">
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="투명경영 자료 분류">
-          {CATEGORIES.map(c => <button key={c} type="button" onClick={() => setCategory(c)} className={`px-4 py-2.5 rounded-xl text-sm font-bold border ${category===c?'bg-primary text-primary-ink border-primary':'bg-paper-card text-ink-soft border-line hover:text-ink'}`}>{c}</button>)}
+        <div className="overflow-x-auto pb-1" role="tablist" aria-label="투명경영 자료 분류">
+          <div className="grid grid-cols-8 gap-3 min-w-[920px]">
+            {CATEGORIES.map(c => <button key={c} type="button" onClick={() => setCategory(c)} className={`w-full min-h-11 px-3 py-2.5 rounded-xl text-sm font-bold border whitespace-nowrap transition-colors ${category===c?'bg-primary text-primary-ink border-primary':'bg-paper-card text-ink-soft border-line hover:text-ink'}`}>{c}</button>)}
+          </div>
         </div>
         {docs.length === 0 ? <EmptyNotice /> : <div className="grid md:grid-cols-2 gap-4">{docs.map(d => <DocumentCard key={d.id} doc={d} />)}</div>}
       </section>
