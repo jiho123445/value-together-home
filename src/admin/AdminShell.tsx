@@ -66,14 +66,14 @@ export const AdminShell: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-paper-soft flex">
+    <div className="h-screen bg-paper-soft flex overflow-hidden">
       {/* Sidebar (desktop) */}
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 bg-ink text-white/80">
+      <aside className="hidden lg:flex h-screen flex-col w-64 shrink-0 bg-ink text-white/80">
         <div className="p-5 border-b border-white/10">
           <Logo size="footer" className="[&_span]:text-white [&_span.text-secondary-ink]:text-white/50" />
           <p className="text-[11px] text-white/40 mt-1">관리자 시스템</p>
         </div>
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1 overflow-hidden">
           {NAV.map((item) => (
             <SidebarButton key={item.key} item={item} active={tab === item.key} onClick={() => goToTab(item.key)} />
           ))}
@@ -129,7 +129,7 @@ export const AdminShell: React.FC = () => {
         </div>
       )}
 
-      <main className="flex-1 min-w-0 pt-14 lg:pt-0">
+      <main className="flex-1 min-w-0 h-screen overflow-y-auto pt-14 lg:pt-0">
         <div className="p-4 sm:p-8 max-w-5xl mx-auto">{renderTab()}</div>
       </main>
     </div>
