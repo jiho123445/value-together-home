@@ -2,87 +2,253 @@
 <html lang="ko" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>사회적협동조합 가치함께</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <!-- =========================================================
+         기본 SEO
+    ========================================================== -->
+
+    <title>
+      가치함께 사회적협동조합 | 사람과 지역을 함께 성장시키는 사회적협동조합
+    </title>
+
     <meta
       name="description"
-      content="사회적협동조합 가치함께는 사람과 지역사회를 연결하고, 함께 성장할 수 있는 사회적 가치를 만들어갑니다."
+      content="가치함께 사회적협동조합은 사람을 중심에 두고 지역사회와 함께 성장하는 사회적협동조합입니다. 사회서비스, 교육, 지역사회, 돌봄·복지, 일자리·자립지원 등 다양한 사업을 연결합니다."
     />
-    <meta name="author" content="사회적협동조합 가치함께" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <meta name="theme-color" content="#B9832A" />
-    <meta property="og:site_name" content="사회적협동조합 가치함께" />
-    <meta property="og:locale" content="ko_KR" />
 
-    <!--
-      SEO 참고: canonical/OG URL과 아래 JSON-LD의 도메인은 현재 실제 배포
-      주소(Vercel 기본 도메인)로 채워져 있습니다. 나중에 별도의 커스텀
-      도메인(예: valuetogether.or.kr)을 연결하면 이 파일과
-      scripts/generate-previews.mjs, public/robots.txt의 도메인을
-      함께 새 도메인으로 업데이트하세요.
-    -->
-    <link rel="canonical" href="https://value-together-home-gray.vercel.app/" />
+    <meta
+      name="keywords"
+      content="가치함께, 사회적협동조합, 가치함께 사회적협동조합, 사회적협동조합 가치함께, 사회서비스, 지역사회, 돌봄, 복지, 교육, 일자리, 자립지원"
+    />
 
-    <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <meta
+      name="author"
+      content="가치함께 사회적협동조합"
+    />
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="사회적협동조합 가치함께" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+
+    <meta
+      name="theme-color"
+      content="#B9832A"
+    />
+
+    <!-- 검색엔진 및 서비스에서 사용할 대표 URL -->
+    <link
+      rel="canonical"
+      href="https://gachi.or.kr/"
+    />
+
+    <!-- =========================================================
+         Open Graph
+         카카오톡 / 네이버 / 페이스북 / 링크 공유 시 사용
+    ========================================================== -->
+
+    <meta
+      property="og:type"
+      content="website"
+    />
+
+    <meta
+      property="og:site_name"
+      content="가치함께 사회적협동조합"
+    />
+
+    <meta
+      property="og:locale"
+      content="ko_KR"
+    />
+
+    <meta
+      property="og:title"
+      content="가치함께 사회적협동조합"
+    />
+
     <meta
       property="og:description"
-      content="사람과 지역사회를 연결하고, 함께 성장할 수 있는 사회적 가치를 만들어가는 사회적협동조합입니다."
+      content="사람과 지역을 함께 성장시키는 사회적협동조합"
     />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://value-together-home-gray.vercel.app/" />
-    <meta property="og:image" content="https://value-together-home-gray.vercel.app/og-image.png" />
-    <meta property="og:image:type" content="image/png" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="사회적협동조합 가치함께" />
+    <meta
+      property="og:url"
+      content="https://gachi.or.kr/"
+    />
+
+    <meta
+      property="og:image"
+      content="https://gachi.or.kr/og-image.jpg"
+    />
+
+    <meta
+      property="og:image:secure_url"
+      content="https://gachi.or.kr/og-image.jpg"
+    />
+
+    <meta
+      property="og:image:type"
+      content="image/jpeg"
+    />
+
+    <meta
+      property="og:image:width"
+      content="1200"
+    />
+
+    <meta
+      property="og:image:height"
+      content="630"
+    />
+
+    <meta
+      property="og:image:alt"
+      content="가치함께 사회적협동조합의 사람과 지역사회가 함께하는 모습"
+    />
+
+    <!-- =========================================================
+         Twitter / X
+    ========================================================== -->
+
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
+
+    <meta
+      name="twitter:title"
+      content="가치함께 사회적협동조합"
+    />
+
     <meta
       name="twitter:description"
-      content="사람과 지역사회를 연결하고, 함께 성장할 수 있는 사회적 가치를 만들어가는 사회적협동조합입니다."
+      content="사람과 지역을 함께 성장시키는 사회적협동조합"
     />
-    <meta name="twitter:image" content="https://value-together-home-gray.vercel.app/og-image.png" />
 
-    <!-- 구조화 데이터: 실제 주소/설립연도 등은 관리자 설정 입력 후
-         Phase 9에서 채워집니다. 지금은 허위 정보를 넣지 않기 위해
-         비워둡니다. -->
+    <meta
+      name="twitter:image"
+      content="https://gachi.or.kr/og-image.jpg"
+    />
+
+    <meta
+      name="twitter:image:alt"
+      content="가치함께 사회적협동조합의 사람과 지역사회가 함께하는 모습"
+    />
+
+    <!-- =========================================================
+         구조화 데이터 (JSON-LD)
+         Google 등 검색엔진이 기관 정보를 이해하는 데 도움
+    ========================================================== -->
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "사회적협동조합 가치함께",
-      "alternateName": "가치함께",
-      "url": "https://value-together-home-gray.vercel.app/"
+      "name": "가치함께 사회적협동조합",
+      "alternateName": "사회적협동조합 가치함께",
+      "url": "https://gachi.or.kr/",
+      "logo": "https://gachi.or.kr/logo-mark.png",
+      "description": "사람과 지역을 함께 성장시키는 사회적협동조합"
     }
     </script>
 
-    <!-- Web Fonts: Gothic A1(제목) + Noto Sans KR(본문) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- =========================================================
+         Favicons
+    ========================================================== -->
+
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/favicon.ico"
+    />
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon-16x16.png"
+    />
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
+    />
+
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/apple-touch-icon.png"
+    />
+
+    <link
+      rel="manifest"
+      href="/site.webmanifest"
+    />
+
+    <!-- =========================================================
+         Web Fonts
+    ========================================================== -->
+
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
     />
 
+    <!-- =========================================================
+         기본 스타일
+    ========================================================== -->
+
     <style>
       body {
-        font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+        font-family:
+          'Noto Sans KR',
+          -apple-system,
+          BlinkMacSystemFont,
+          system-ui,
+          Roboto,
+          'Helvetica Neue',
+          'Segoe UI',
+          'Apple SD Gothic Neo',
+          'Malgun Gothic',
+          sans-serif;
       }
+
       .font-display {
-        font-family: 'Gothic A1', 'Noto Sans KR', sans-serif;
+        font-family:
+          'Gothic A1',
+          'Noto Sans KR',
+          sans-serif;
       }
     </style>
   </head>
 
-  <body class="bg-[#FBF9F5] text-[#2B2621] antialiased selection:bg-[#B9832A] selection:text-white">
+  <body
+    class="bg-[#FBF9F5] text-[#2B2621] antialiased selection:bg-[#B9832A] selection:text-white"
+  >
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+
+    <script
+      type="module"
+      src="/src/main.tsx"
+    ></script>
   </body>
 </html>
