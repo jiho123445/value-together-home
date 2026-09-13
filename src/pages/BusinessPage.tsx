@@ -17,7 +17,7 @@ export const BusinessPage: React.FC = () => {
 
   return (
     <div>
-      <PageBanner eyebrow="OUR BUSINESS" title="주요사업" description="가치함께가 지역사회와 함께 운영하는 사업을 소개합니다." />
+      <PageBanner eyebrow="OUR BUSINESS" title="주요사업" description="정관 제65조에서 정한 주사업과 기타사업을 구분하여 안내합니다." />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
         <div className="flex flex-wrap gap-2.5 sm:gap-3">

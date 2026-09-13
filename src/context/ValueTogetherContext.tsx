@@ -321,10 +321,18 @@ function writeLocalCache(key: string, value: unknown) {
   }
 }
 
+const isLegacyProgramSeed = (items: any[]): boolean => {
+  if (!Array.isArray(items) || items.length === 0) return false;
+  const ids = items.map((item) => String(item?.id || ''));
+  const legacyIds = new Set(['prog-01', 'prog-02', 'prog-03', 'prog-04', 'prog-05', 'prog-06']);
+  const previousV10Ids = new Set(['prog-main-01', 'prog-main-02', 'prog-main-03', 'prog-other-01', 'prog-other-02', 'prog-other-03']);
+  return ids.every((id) => legacyIds.has(id) || previousV10Ids.has(id));
+};
+
 export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<OrgSettings>(() => readLocalCache('gachihamkke_v10_settings', INITIAL_SETTINGS));
   const [timeline, setTimeline] = useState<TimelineItem[]>(() => readLocalCache('gachihamkke_v10_timeline', INITIAL_TIMELINE));
-  const [programs, setPrograms] = useState<ProgramItem[]>(() => readLocalCache('gachihamkke_v10_programs', INITIAL_PROGRAMS));
+  const [programs, setPrograms] = useState<ProgramItem[]>(() => readLocalCache('gachihamkke_v10_final_programs', INITIAL_PROGRAMS));
   const [notices, setNotices] = useState<NoticeItem[]>(() => readLocalCache('gachihamkke_v10_notices', INITIAL_NOTICES));
   const [gallery, setGallery] = useState<GalleryItem[]>(() => readLocalCache('gachihamkke_v10_gallery', INITIAL_GALLERY));
   const [galleryCategories, setGalleryCategoriesState] = useState<string[]>(() =>
@@ -595,7 +603,20 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
           setSettings((prev) => ({ ...prev, ...byId['settings'] }));
         }
         if (Array.isArray(byId['timeline']?.items)) applyTimeline(byId['timeline'].items);
-        if (Array.isArray(byId['programs']?.items)) applyPrograms(byId['programs'].items);
+        if (Array.isArray(byId['programs']?.items)) {
+          const storedPrograms = byId['programs'].items;
+          if (isLegacyProgramSeed(storedPrograms)) {
+            applyPrograms(INITIAL_PROGRAMS);
+            const adminUid = String(import.meta.env.VITE_ADMIN_UID || '').trim();
+            if (auth.currentUser && adminUid && auth.currentUser.uid === adminUid) {
+              setDoc(doc(db, 'content', 'programs'), { items: INITIAL_PROGRAMS, updatedAt: new Date().toISOString() }, { merge: true }).catch((err) =>
+                handleFirestoreError(err, OperationType.WRITE, 'content/programs migration')
+              );
+            }
+          } else {
+            applyPrograms(storedPrograms);
+          }
+        }
         if (Array.isArray(byId['notices']?.items)) applyNotices(byId['notices'].items);
         if (Array.isArray(byId['gallery']?.items)) {
           const normalized = byId['gallery'].items.map((g: any) => ({
@@ -728,7 +749,20 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         snap.docs.forEach((d) => { byId[d.id] = d.data(); });
         if (byId['settings']) setSettings((prev) => ({ ...prev, ...byId['settings'] }));
         if (Array.isArray(byId['timeline']?.items)) applyTimeline(byId['timeline'].items);
-        if (Array.isArray(byId['programs']?.items)) applyPrograms(byId['programs'].items);
+        if (Array.isArray(byId['programs']?.items)) {
+          const storedPrograms = byId['programs'].items;
+          if (isLegacyProgramSeed(storedPrograms)) {
+            applyPrograms(INITIAL_PROGRAMS);
+            const adminUid = String(import.meta.env.VITE_ADMIN_UID || '').trim();
+            if (auth.currentUser && adminUid && auth.currentUser.uid === adminUid) {
+              setDoc(doc(db, 'content', 'programs'), { items: INITIAL_PROGRAMS, updatedAt: new Date().toISOString() }, { merge: true }).catch((err) =>
+                handleFirestoreError(err, OperationType.WRITE, 'content/programs migration')
+              );
+            }
+          } else {
+            applyPrograms(storedPrograms);
+          }
+        }
         if (Array.isArray(byId['notices']?.items)) applyNotices(byId['notices'].items);
         if (Array.isArray(byId['gallery']?.items)) applyGallery(byId['gallery'].items);
         if (Array.isArray(byId['popups']?.items)) applyPopups(byId['popups'].items);
@@ -772,7 +806,7 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   // inquiries beyond what's declared here.
   useEffect(() => { writeLocalCache('gachihamkke_v10_settings', settings); }, [settings]);
   useEffect(() => { writeLocalCache('gachihamkke_v10_timeline', timeline); }, [timeline]);
-  useEffect(() => { writeLocalCache('gachihamkke_v10_programs', programs); }, [programs]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_final_programs', programs); }, [programs]);
   useEffect(() => { writeLocalCache('gachihamkke_v10_notices', notices); }, [notices]);
   useEffect(() => { writeLocalCache('gachihamkke_v10_gallery', gallery); }, [gallery]);
   useEffect(() => { writeLocalCache('gachihamkke_v10_gallery_categories', galleryCategories); }, [galleryCategories]);
@@ -1318,6 +1352,25 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         deletePopup,
         showPopupsFlag,
         triggerPopupShow,
+
+        addGovernanceDocument,
+        updateGovernanceDocument,
+        deleteGovernanceDocument,
+        addMeeting,
+        updateMeeting,
+        deleteMeeting,
+        addBusinessResult,
+        updateBusinessResult,
+        deleteBusinessResult,
+        addSocialValueMetric,
+        updateSocialValueMetric,
+        deleteSocialValueMetric,
+        submitMembershipApplication,
+        updateMembershipStatus,
+        deleteMembershipApplication,
+        submitDonationInquiry,
+        updateDonationStatus,
+        deleteDonationInquiry,
 
         submitParticipation,
         updateParticipationStatus,

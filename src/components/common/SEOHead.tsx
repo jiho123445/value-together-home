@@ -17,7 +17,7 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   },
   business: {
     title: '주요사업 | 사회적협동조합 가치함께',
-    description: '정관에서 정한 장애인 활동 지원 인재 양성, 노인 관련 민간 자격증 발급, 주민 역량 강화 및 교육 등 가치함께의 주요 사업을 안내합니다.',
+    description: '정관 제65조에서 정한 장애인 활동 지원 인재 양성, 노인 관련 민간 자격증 발급, 주민 역량 강화 및 교육 등 가치함께의 주요 사업을 안내합니다.',
   },
   news: {
     title: '소식 | 사회적협동조합 가치함께',

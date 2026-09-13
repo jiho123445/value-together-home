@@ -5,7 +5,9 @@ import { ProgramCategory, ProgramItem } from '../../types';
 import { Plus, Trash2, Pencil, X, Save } from 'lucide-react';
 import { getProgramPhoto } from '../../utils/programPhoto';
 
-const CATEGORIES: ProgramCategory[] = ['장애인 활동 지원 인재 양성', '노인 관련 민간 자격증 발급', '주민 역량 강화 및 교육', '사회복지 위탁사업', '조합원·직원 교육', '조합 간 협력', '홍보·지역사회사업', '기타사업'];
+const PRIMARY_CATEGORIES: ProgramCategory[] = ['장애인 활동 지원 인재 양성', '노인 관련 민간 자격증 발급', '주민 역량 강화 및 교육'];
+const OTHER_CATEGORIES: ProgramCategory[] = ['사회복지 위탁사업', '조합원·직원 교육', '조합 간 협력', '홍보·지역사회사업'];
+const CATEGORIES: ProgramCategory[] = [...PRIMARY_CATEGORIES, ...OTHER_CATEGORIES];
 const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 
 type DraftProgram = Omit<ProgramItem, 'id' | 'code'>;
@@ -27,7 +29,8 @@ export const ProgramsTab: React.FC = () => {
   const save = () => {
     if (!draft || !draft.title.trim()) return;
     const cleanDetails = draft.details.map((d) => d.trim()).filter(Boolean);
-    const payload = { ...draft, details: cleanDetails.length > 0 ? cleanDetails : ['-'] };
+    const businessType = PRIMARY_CATEGORIES.includes(draft.category) ? '주사업' : '기타사업';
+    const payload = { ...draft, businessType, details: cleanDetails.length > 0 ? cleanDetails : ['-'] };
     if (editingId && editingId !== 'new') updateProgram(editingId, payload);
     else addProgram(payload);
     cancel();
@@ -38,13 +41,18 @@ export const ProgramsTab: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-black text-xl text-ink">주요사업 관리</h1>
-          <p className="text-xs text-ink-soft mt-1">홈페이지 &lsquo;주요사업&rsquo; 메뉴에 노출되는 사업 카드를 관리합니다.</p>
+          <p className="text-xs text-ink-soft mt-1">정관 제65조의 주사업·기타사업을 기준으로 홈페이지 사업 카드를 관리합니다.</p>
         </div>
         {!editingId && (
           <button onClick={startCreate} className="inline-flex items-center gap-1.5 text-xs font-bold text-primary-ink bg-primary-soft px-4 py-2.5 rounded-xl hover:opacity-80">
             <Plus className="w-3.5 h-3.5" /> 사업 추가
           </button>
         )}
+      </div>
+
+      <div className="bg-secondary-soft border border-secondary-ink/15 rounded-2xl p-4 text-sm text-secondary-ink">
+        <p className="font-black">정관상 주사업 기준</p>
+        <p className="mt-1 leading-relaxed">장애인 활동 지원 인재 양성, 노인 관련 민간 자격증 발급, 주민 역량 강화 및 교육이 주사업입니다. 정관 제65조는 주사업의 사업량이 전체 사업량의 40% 이상이 되도록 규정하고 있으므로, 실제 사업계획·실적을 등록할 때 주사업 여부를 정확히 선택해야 합니다.</p>
       </div>
 
       {editingId && draft && (
@@ -63,10 +71,7 @@ export const ProgramsTab: React.FC = () => {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-ink">정관상 사업 구분</label>
-              <select className={inputCls} value={draft.businessType || '주사업'} onChange={(e) => setDraft({ ...draft, businessType: e.target.value as '주사업' | '기타사업' })}>
-                <option value="주사업">주사업</option>
-                <option value="기타사업">기타사업</option>
-              </select>
+              <div className="px-3.5 py-2.5 rounded-xl border border-line bg-paper-soft text-sm font-bold text-ink">{PRIMARY_CATEGORIES.includes(draft.category) ? '주사업' : '기타사업'}</div>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-ink">lucide 아이콘 이름</label>

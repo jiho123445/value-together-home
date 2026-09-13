@@ -43,3 +43,18 @@
 8. 개인정보처리방침의 수집항목/보유기간/처리위탁 내용을 실제 운영과 일치시켜 검토
 9. 카카오톡 공유 디버거 및 실제 모바일 공유로 OG 이미지 확인
 10. Vercel 배포 후 `/`, `/about`, `/business`, `/news`, `/membership`, `/donation`, `/governance`, `/social-value` 및 상세 URL 새로고침 테스트
+
+## CI TypeScript Provider Fix
+- Fixed `TS2740` in `src/context/ValueTogetherContext.tsx` by exposing all V10 CRUD/application methods through `ValueTogetherContext.Provider`.
+- Added provider bindings for governance documents, meetings, business results, social-value metrics, membership applications, and donation inquiries.
+- Verified that every `ValueTogetherContextType` member is now present in the provider value object.
+
+## V10 사업 정관 정합성 보완
+- 홈페이지 초기 사업을 첨부 정관 제65조의 실제 사업명과 항목에 맞춰 7개 사업으로 재구성
+- 주사업 3개: 장애인 활동 지원 인재 양성 사업 / 노인 관련 민간 자격증 발급 사업 / 주민 역량 강화 및 교육 사업
+- 기타사업 4개: 국가 및 지방자치단체 위탁 사회복지 관련 사업 / 조합원·직원 상담·교육·훈련 및 정보 제공 사업 / 조합 간 협력 사업 / 조합의 홍보 및 지역사회를 위한 사업
+- 정관에 근거하지 않는 기존 사업 설명·성과 수치를 초기 데이터에서 제거하고, 실제 사업계획 확정 후 입력하도록 변경
+- 관리자 주요사업 등록 시 선택한 정관상 사업 항목에 따라 주사업/기타사업 구분이 자동 결정되도록 개선
+- 관리자 주요사업 화면에 정관상 주사업 40% 이상 기준을 안내
+- 기존 V9 및 이전 V10의 샘플 사업 데이터가 Firestore에 남아 있는 경우, 알려진 기본 시드 데이터에 한해 V10 최종 사업목록으로 자동 마이그레이션
+- 사업용 localStorage cache key를 `gachihamkke_v10_final_programs`로 분리하여 이전 V10 사업 캐시가 새 사업을 덮지 않도록 개선

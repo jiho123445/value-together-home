@@ -13,7 +13,7 @@ export const DashboardTab: React.FC<{ onNavigate: (tab: any) => void }> = ({ onN
 
   const handleReset = () => {
     const ok = window.confirm(
-      '기본정보/주요사업 6개/연혁/소식/갤러리/협력기관을 코드에 저장된 기본값으로 되돌립니다.\n' +
+      '기본정보/정관상 사업/연혁/소식/갤러리/협력기관을 코드에 저장된 기본값으로 되돌립니다.\n' +
       '지금까지 관리자 화면에서 직접 입력·수정한 내용은 모두 사라집니다. 계속하시겠습니까?'
     );
     if (!ok) return;
