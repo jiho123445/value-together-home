@@ -39,6 +39,7 @@ import {
   INITIAL_MEETINGS,
   INITIAL_BUSINESS_RESULTS,
   INITIAL_SOCIAL_VALUE_METRICS,
+  normalizeGalleryCategory,
 } from '../data/initialData';
 import { formatImageUrl } from '../utils/imageUrl';
 import { sanitizeForFirestore } from '../utils/sanitizeForFirestore';
@@ -334,10 +335,18 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   const [timeline, setTimeline] = useState<TimelineItem[]>(() => readLocalCache('gachihamkke_v10_timeline', INITIAL_TIMELINE));
   const [programs, setPrograms] = useState<ProgramItem[]>(() => readLocalCache('gachihamkke_v10_final_programs', INITIAL_PROGRAMS));
   const [notices, setNotices] = useState<NoticeItem[]>(() => readLocalCache('gachihamkke_v10_notices', INITIAL_NOTICES));
-  const [gallery, setGallery] = useState<GalleryItem[]>(() => readLocalCache('gachihamkke_v10_gallery', INITIAL_GALLERY));
-  const [galleryCategories, setGalleryCategoriesState] = useState<string[]>(() =>
-    readLocalCache('gachihamkke_v10_gallery_categories', INITIAL_GALLERY_CATEGORIES)
+  const [gallery, setGallery] = useState<GalleryItem[]>(() =>
+    readLocalCache<GalleryItem[]>('gachihamkke_v10_gallery', INITIAL_GALLERY).map((g) => ({
+      ...g,
+      category: normalizeGalleryCategory(g.category),
+      images: Array.isArray(g.images) && g.images.length > 0 ? g.images : g.imageUrl ? [g.imageUrl] : [],
+    }))
   );
+  const [galleryCategories, setGalleryCategoriesState] = useState<string[]>(() => {
+    const cached = readLocalCache<string[]>('gachihamkke_v10_gallery_categories', INITIAL_GALLERY_CATEGORIES);
+    const normalized = cached.map(normalizeGalleryCategory).filter((c, i, arr) => arr.indexOf(c) === i);
+    return normalized.length > 0 ? normalized : INITIAL_GALLERY_CATEGORIES;
+  });
   const [popups, setPopups] = useState<PopupItem[]>(() => readLocalCache('gachihamkke_v10_popups', INITIAL_POPUPS));
   const [partners, setPartners] = useState<PartnerItem[]>(() => readLocalCache('gachihamkke_v10_partners', INITIAL_PARTNERS));
   const [governanceDocuments, setGovernanceDocuments] = useState<GovernanceDocument[]>(() => readLocalCache('gachihamkke_v10_governance', INITIAL_GOVERNANCE_DOCUMENTS));
@@ -621,12 +630,16 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         if (Array.isArray(byId['gallery']?.items)) {
           const normalized = byId['gallery'].items.map((g: any) => ({
             ...g,
+            category: normalizeGalleryCategory(g.category),
             images: Array.isArray(g.images) && g.images.length > 0 ? g.images : g.imageUrl ? [g.imageUrl] : [],
           }));
           applyGallery(normalized);
         }
         if (Array.isArray(byId['gallery']?.categories) && byId['gallery'].categories.length > 0) {
-          applyGalleryCategories(byId['gallery'].categories);
+          const normalizedCategories = byId['gallery'].categories
+            .map((c: string) => normalizeGalleryCategory(c))
+            .filter((c: string, i: number, arr: string[]) => arr.indexOf(c) === i);
+          applyGalleryCategories(normalizedCategories.length > 0 ? normalizedCategories : INITIAL_GALLERY_CATEGORIES);
         }
         if (Array.isArray(byId['popups']?.items)) applyPopups(byId['popups'].items);
         if (Array.isArray(byId['partners']?.items)) applyPartners(byId['partners'].items);

@@ -19,7 +19,7 @@
  * 그대로 상위로 전달해 관리자 화면에 실패로 표시되게 한다.
  */
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from '../lib/firebase';
+import { storage, auth } from '../lib/firebase';
 
 const generateFileName = (extension = 'webp'): string => {
   const unique = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -86,16 +86,30 @@ export async function uploadImageBlob(
   folder: string,
   _originalName: string = 'image.jpg'
 ): Promise<string> {
+  if (!auth.currentUser) {
+    throw new Error('ADMIN_AUTH_REQUIRED: 관리자 인증 세션이 확인되지 않았습니다. 관리자 화면을 새로고침한 뒤 다시 로그인해 주세요.');
+  }
+  const bucket = String(storage.app.options.storageBucket || '').trim();
+  if (!bucket) {
+    throw new Error('STORAGE_BUCKET_MISSING: Firebase Storage 버킷 설정이 없습니다. VITE_FIREBASE_STORAGE_BUCKET 환경변수를 확인해 주세요.');
+  }
+
   const optimized = await optimizeImage(blob);
   const isWebp = optimized.type === 'image/webp';
   const extension = isWebp ? 'webp' : (optimized.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
   const fileName = generateFileName(extension);
   const storageRef = ref(storage, `${folder}/${fileName}`);
-  const snapshot = await uploadBytes(storageRef, optimized, {
-    contentType: optimized.type || 'image/jpeg',
-    cacheControl: 'public,max-age=31536000,immutable',
-  });
-  return await getDownloadURL(snapshot.ref);
+  try {
+    const snapshot = await uploadBytes(storageRef, optimized, {
+      contentType: optimized.type || blob.type || 'image/jpeg',
+      cacheControl: 'public,max-age=31536000,immutable',
+    });
+    return await getDownloadURL(snapshot.ref);
+  } catch (error: any) {
+    const code = String(error?.code || 'unknown');
+    const message = String(error?.message || '');
+    throw new Error(`STORAGE_UPLOAD_FAILED [${code}] ${message}`);
+  }
 }
 
 /**

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useValueTogether } from '../context/ValueTogetherContext';
 import { PageBanner } from '../components/common/PageBanner';
 import { Pagination } from '../components/common/Pagination';
-import { Layers } from 'lucide-react';
+import { Layers, BriefcaseBusiness } from 'lucide-react';
 import { getGalleryPhoto } from '../utils/galleryPhoto';
 
 const PAGE_SIZE = 12;
@@ -24,10 +24,15 @@ export const GalleryPage: React.FC = () => {
 
   return (
     <div>
-      <PageBanner eyebrow="GALLERY" title="활동갤러리" description="가치함께의 다양한 활동 현장을 사진으로 소개합니다." />
+      <PageBanner eyebrow="GALLERY" title="활동갤러리" description="가치함께의 사업별 활동 현장을 사진으로 소개합니다." />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
-        <div className="flex flex-wrap gap-2.5 sm:gap-3">
+        <div className="rounded-2xl border border-line bg-paper-card p-3 sm:p-4">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <BriefcaseBusiness className="w-4 h-4 text-secondary-ink" />
+            <span className="text-xs font-bold text-ink">사업별 활동 보기</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
           {['전체', ...galleryCategories].map((c) => (
             <button
               key={c}
@@ -40,6 +45,7 @@ export const GalleryPage: React.FC = () => {
               {c}
             </button>
           ))}
+          </div>
         </div>
 
         {pageItems.length === 0 ? (

@@ -34,8 +34,14 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({ label, value
     try {
       const url = await uploadImageBlob(file, folder, file.name);
       onChange(url);
-    } catch {
-      setError('이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[ImageUploadField] upload failed:', err);
+      if (message.includes('ADMIN_AUTH_REQUIRED')) setError('관리자 인증 세션이 없습니다. 관리자 화면을 새로고침한 뒤 다시 로그인해 주세요.');
+      else if (message.includes('STORAGE_BUCKET_MISSING')) setError('Firebase Storage 버킷 설정이 없습니다. Vercel 환경변수 VITE_FIREBASE_STORAGE_BUCKET을 확인해 주세요.');
+      else if (message.includes('storage/unauthorized')) setError('Firebase Storage 권한이 거부되었습니다. storage.rules의 관리자 UID와 현재 관리자 UID를 확인해 주세요.');
+      else if (message.includes('storage/quota-exceeded')) setError('Firebase Storage 용량 한도를 초과했습니다. Firebase Storage 사용량을 확인해 주세요.');
+      else setError('이미지 업로드에 실패했습니다. 브라우저 콘솔의 [ImageUploadField] 오류에서 Firebase 오류 코드를 확인해 주세요.');
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

@@ -3,26 +3,35 @@ import { useValueTogether } from '../../context/ValueTogetherContext';
 import { validateImageFile } from '../../utils/uploadValidation';
 import { uploadImageBlob } from '../../utils/uploadToStorage';
 import { GalleryItem } from '../../types';
-import { Plus, Trash2, Pencil, X, Save, Loader2, Image as ImageIcon, Tag } from 'lucide-react';
+import { Plus, X, Save, Loader2, Image as ImageIcon, BriefcaseBusiness } from 'lucide-react';
 import { getGalleryPhoto } from '../../utils/galleryPhoto';
 
 const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 
 type DraftGallery = Omit<GalleryItem, 'id' | 'date'> & { date?: string };
 
+const BUSINESS_GALLERY_CATEGORIES = [
+  { value: '장애인 활동 지원 인재 양성', label: '주사업 · 장애인 활동 지원 인재 양성' },
+  { value: '노인 관련 민간 자격증 발급', label: '주사업 · 노인 관련 민간 자격증 발급' },
+  { value: '주민 역량 강화 및 교육', label: '주사업 · 주민 역량 강화 및 교육' },
+  { value: '사회복지 위탁사업', label: '기타사업 · 사회복지 위탁사업' },
+  { value: '조합원·직원 교육', label: '기타사업 · 조합원·직원 교육' },
+  { value: '조합 간 협력', label: '기타사업 · 조합 간 협력' },
+  { value: '홍보·지역사회사업', label: '기타사업 · 홍보·지역사회사업' },
+];
+
 const emptyDraft = (category: string): DraftGallery => ({ title: '', category, imageUrl: '', images: [], description: '', location: '' });
 
 export const GalleryTab: React.FC = () => {
   const {
     gallery, addGallery, updateGallery, deleteGallery, galleryCategories,
-    addGalleryCategory, updateGalleryCategory, deleteGalleryCategory, getImageUrl,
+    getImageUrl,
   } = useValueTogether();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<DraftGallery | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [newCategory, setNewCategory] = useState('');
 
   const startCreate = () => { setEditingId('new'); setDraft(emptyDraft(galleryCategories[0] || '기타')); };
   const startEdit = (g: GalleryItem) => { setEditingId(g.id); setDraft({ ...g, images: g.images || (g.imageUrl ? [g.imageUrl] : []) }); };
@@ -63,7 +72,7 @@ export const GalleryTab: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-black text-xl text-ink">활동갤러리 관리</h1>
-          <p className="text-xs text-ink-soft mt-1">사진과 카테고리를 관리합니다.</p>
+          <p className="text-xs text-ink-soft mt-1">조합의 3개 주사업과 4개 기타사업에 맞춰 활동사진을 관리합니다.</p>
         </div>
         {!editingId && (
           <button onClick={startCreate} className="inline-flex items-center gap-1.5 text-xs font-bold text-primary-ink bg-primary-soft px-4 py-2.5 rounded-xl hover:opacity-80">
@@ -73,27 +82,15 @@ export const GalleryTab: React.FC = () => {
       </div>
 
       <div className="bg-paper-card border border-line rounded-2xl p-5 space-y-3">
-        <h2 className="font-bold text-ink text-sm flex items-center gap-1.5"><Tag className="w-4 h-4" /> 카테고리 관리</h2>
-        <div className="flex flex-wrap gap-2">
-          {galleryCategories.map((c) => (
-            <span key={c} className="inline-flex items-center gap-1.5 bg-paper-soft border border-line rounded-full pl-3 pr-1.5 py-1 text-xs font-bold text-ink">
-              <input
-                className="bg-transparent w-16 outline-none"
-                value={c}
-                onChange={(e) => updateGalleryCategory(c, e.target.value)}
-              />
-              <button onClick={() => confirm(`'${c}' 카테고리를 삭제할까요?`) && deleteGalleryCategory(c)} className="p-0.5 text-ink-soft hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
-            </span>
+        <h2 className="font-bold text-ink text-sm flex items-center gap-1.5"><BriefcaseBusiness className="w-4 h-4" /> 사업별 갤러리 분류</h2>
+        <p className="text-xs text-ink-soft">활동사진의 분류는 주요사업·기타사업과 연결되어 있습니다. 공개 홈페이지에서도 동일한 사업별 탭으로 자동 분류됩니다.</p>
+        <div className="grid sm:grid-cols-2 gap-2">
+          {BUSINESS_GALLERY_CATEGORIES.map((c, i) => (
+            <div key={c.value} className="rounded-xl border border-line bg-paper-soft px-3 py-2.5">
+              <p className="text-[10px] font-bold text-secondary-ink">사업 {String(i + 1).padStart(2, '0')}</p>
+              <p className="text-xs font-bold text-ink mt-0.5">{c.label}</p>
+            </div>
           ))}
-        </div>
-        <div className="flex gap-2">
-          <input className={inputCls} placeholder="새 카테고리명" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
-          <button
-            onClick={() => { if (newCategory.trim()) { addGalleryCategory(newCategory.trim()); setNewCategory(''); } }}
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-primary text-primary-ink text-xs font-bold"
-          >
-            추가
-          </button>
         </div>
       </div>
 
@@ -112,7 +109,7 @@ export const GalleryTab: React.FC = () => {
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-ink">카테고리</label>
               <select className={inputCls} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
-                {galleryCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+                {galleryCategories.map((c) => { const meta = BUSINESS_GALLERY_CATEGORIES.find((b) => b.value === c); return <option key={c} value={c}>{meta?.label || c}</option>; })}
               </select>
             </div>
           </div>

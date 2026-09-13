@@ -21,7 +21,29 @@ import {
 // 관리자 페이지에서 언제든 실제 값으로 교체/삭제할 수 있습니다.
 // ─────────────────────────────────────────────────────────────────────────
 
-export const INITIAL_GALLERY_CATEGORIES: string[] = ['교육', '복지', '지역사회', '행사', '기타'];
+// 활동갤러리는 홈페이지의 주요사업 체계와 1:1로 연결합니다.
+// 갤러리 등록 시 이 분류를 선택하면 공개 갤러리의 사업별 탭에서 자동으로 분류됩니다.
+export const INITIAL_GALLERY_CATEGORIES: string[] = [
+  '장애인 활동 지원 인재 양성',
+  '노인 관련 민간 자격증 발급',
+  '주민 역량 강화 및 교육',
+  '사회복지 위탁사업',
+  '조합원·직원 교육',
+  '조합 간 협력',
+  '홍보·지역사회사업',
+];
+
+/** V10에서 사용하던 분류가 남아 있어도 V11 사업분류로 표시되도록 하는 호환 매핑입니다. */
+export const LEGACY_GALLERY_CATEGORY_MAP: Record<string, string> = {
+  '교육': '주민 역량 강화 및 교육',
+  '복지': '장애인 활동 지원 인재 양성',
+  '지역사회': '홍보·지역사회사업',
+  '행사': '홍보·지역사회사업',
+  '기타': '홍보·지역사회사업',
+};
+
+export const normalizeGalleryCategory = (category?: string): string =>
+  (category && LEGACY_GALLERY_CATEGORY_MAP[category]) || category || '홍보·지역사회사업';
 
 export const INITIAL_SETTINGS: OrgSettings = {
   name: '사회적협동조합 가치함께',
