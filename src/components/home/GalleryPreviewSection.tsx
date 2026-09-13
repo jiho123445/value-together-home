@@ -57,13 +57,28 @@ export const GalleryPreviewSection: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 sm:grid-rows-2 gap-3 sm:gap-4 sm:h-[480px] lg:h-[560px]">
-          <div className="col-span-2 sm:row-span-2">
-            <GalleryTile item={feature} aspect="aspect-video sm:aspect-auto sm:h-full" textSize="text-base sm:text-lg" onOpen={viewGalleryDetail} getImageUrl={getImageUrl} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr] lg:grid-rows-2 gap-4 sm:gap-5 lg:gap-6 lg:h-[560px]">
+          {/* 첫 번째 카드는 활동 대표 이미지로 넓게 배치하고 2개 행을 차지합니다. */}
+          <div className="sm:col-span-2 lg:col-span-1 lg:row-span-2 min-h-[320px] lg:min-h-0">
+            <GalleryTile
+              item={feature}
+              aspect="h-full min-h-[320px] lg:min-h-0"
+              textSize="text-base sm:text-lg lg:text-xl"
+              onOpen={viewGalleryDetail}
+              getImageUrl={getImageUrl}
+            />
           </div>
+
+          {/* 오른쪽 4개 카드는 동일한 크기와 동일한 간격으로 균등 배치합니다. */}
           {restItems.map((item) => (
-            <div key={item.id} className="col-span-1">
-              <GalleryTile item={item} aspect="aspect-square sm:aspect-auto sm:h-full" textSize="text-sm" onOpen={viewGalleryDetail} getImageUrl={getImageUrl} />
+            <div key={item.id} className="min-h-[220px] lg:min-h-0">
+              <GalleryTile
+                item={item}
+                aspect="h-full min-h-[220px] lg:min-h-0"
+                textSize="text-sm sm:text-base"
+                onOpen={viewGalleryDetail}
+                getImageUrl={getImageUrl}
+              />
             </div>
           ))}
         </div>
