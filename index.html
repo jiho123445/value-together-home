@@ -2,158 +2,78 @@
 <html lang="ko" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- =========================================================
          기본 SEO
     ========================================================== -->
-
-    <title>
-      가치함께 사회적협동조합 | 사람과 지역을 함께 성장시키는 사회적협동조합
-    </title>
+    <title>가치함께 사회적협동조합 | 사람과 지역을 함께 성장시키는 사회적협동조합</title>
 
     <meta
       name="description"
       content="가치함께 사회적협동조합은 사람을 중심에 두고 지역사회와 함께 성장하는 사회적협동조합입니다. 사회서비스, 교육, 지역사회, 돌봄·복지, 일자리·자립지원 등 다양한 사업을 연결합니다."
     />
 
-    <meta
-      name="keywords"
-      content="가치함께, 사회적협동조합, 가치함께 사회적협동조합, 사회적협동조합 가치함께, 사회서비스, 지역사회, 돌봄, 복지, 교육, 일자리, 자립지원"
-    />
+    <meta name="keywords" content="가치함께, 가치함께 사회적협동조합, 사회적협동조합, 사회서비스, 지역사회, 돌봄, 복지, 교육, 일자리, 자립지원" />
+    <meta name="author" content="가치함께 사회적협동조합" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#B9832A" />
 
-    <meta
-      name="author"
-      content="가치함께 사회적협동조합"
-    />
-
-    <meta
-      name="robots"
-      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
-    />
-
-    <meta
-      name="theme-color"
-      content="#B9832A"
-    />
-
-    <!-- 검색엔진 및 서비스에서 사용할 대표 URL -->
-    <link
-      rel="canonical"
-      href="https://gachi.or.kr/"
-    />
+    <!-- 현재 실제 배포 중인 Vercel 주소를 기준으로 설정 -->
+    <link rel="canonical" href="https://value-together-home-gray.vercel.app/" />
 
     <!-- =========================================================
          Open Graph
-         카카오톡 / 네이버 / 페이스북 / 링크 공유 시 사용
+         카카오톡 등 링크 공유 미리보기용
     ========================================================== -->
-
-    <meta
-      property="og:type"
-      content="website"
-    />
-
-    <meta
-      property="og:site_name"
-      content="가치함께 사회적협동조합"
-    />
-
-    <meta
-      property="og:locale"
-      content="ko_KR"
-    />
-
-    <meta
-      property="og:title"
-      content="가치함께 사회적협동조합"
-    />
-
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="가치함께 사회적협동조합" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:title" content="가치함께 사회적협동조합" />
     <meta
       property="og:description"
       content="사람과 지역을 함께 성장시키는 사회적협동조합"
     />
+    <meta property="og:url" content="https://value-together-home-gray.vercel.app/" />
 
-    <meta
-      property="og:url"
-      content="https://gachi.or.kr/"
-    />
-
+    <!-- 현재 Vercel 배포 주소에서 직접 접근 가능한 OG 이미지 -->
     <meta
       property="og:image"
-      content="https://gachi.or.kr/og-image.jpg"
+      content="https://value-together-home-gray.vercel.app/og-image.png"
     />
-
     <meta
       property="og:image:secure_url"
-      content="https://gachi.or.kr/og-image.jpg"
+      content="https://value-together-home-gray.vercel.app/og-image.png"
     />
-
-    <meta
-      property="og:image:type"
-      content="image/jpeg"
-    />
-
-    <meta
-      property="og:image:width"
-      content="1200"
-    />
-
-    <meta
-      property="og:image:height"
-      content="630"
-    />
-
-    <meta
-      property="og:image:alt"
-      content="가치함께 사회적협동조합의 사람과 지역사회가 함께하는 모습"
-    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="가치함께 사회적협동조합의 사람과 지역사회가 함께하는 모습" />
 
     <!-- =========================================================
          Twitter / X
     ========================================================== -->
-
-    <meta
-      name="twitter:card"
-      content="summary_large_image"
-    />
-
-    <meta
-      name="twitter:title"
-      content="가치함께 사회적협동조합"
-    />
-
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="가치함께 사회적협동조합" />
     <meta
       name="twitter:description"
       content="사람과 지역을 함께 성장시키는 사회적협동조합"
     />
-
     <meta
       name="twitter:image"
-      content="https://gachi.or.kr/og-image.jpg"
+      content="https://value-together-home-gray.vercel.app/og-image.png"
     />
-
-    <meta
-      name="twitter:image:alt"
-      content="가치함께 사회적협동조합의 사람과 지역사회가 함께하는 모습"
-    />
+    <meta name="twitter:image:alt" content="가치함께 사회적협동조합의 사람과 지역사회가 함께하는 모습" />
 
     <!-- =========================================================
          구조화 데이터 (JSON-LD)
-         Google 등 검색엔진이 기관 정보를 이해하는 데 도움
     ========================================================== -->
-
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "가치함께 사회적협동조합",
       "alternateName": "사회적협동조합 가치함께",
-      "url": "https://gachi.or.kr/",
-      "logo": "https://gachi.or.kr/logo-mark.png",
+      "url": "https://value-together-home-gray.vercel.app/",
+      "logo": "https://value-together-home-gray.vercel.app/logo-mark.png",
       "description": "사람과 지역을 함께 성장시키는 사회적협동조합"
     }
     </script>
@@ -161,94 +81,37 @@
     <!-- =========================================================
          Favicons
     ========================================================== -->
-
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="/favicon.ico"
-    />
-
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/favicon-16x16.png"
-    />
-
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/favicon-32x32.png"
-    />
-
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/apple-touch-icon.png"
-    />
-
-    <link
-      rel="manifest"
-      href="/site.webmanifest"
-    />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <!-- =========================================================
          Web Fonts
     ========================================================== -->
-
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com"
-    />
-
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin
-    />
-
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
     />
 
-    <!-- =========================================================
-         기본 스타일
-    ========================================================== -->
-
     <style>
       body {
-        font-family:
-          'Noto Sans KR',
-          -apple-system,
-          BlinkMacSystemFont,
-          system-ui,
-          Roboto,
-          'Helvetica Neue',
-          'Segoe UI',
-          'Apple SD Gothic Neo',
-          'Malgun Gothic',
-          sans-serif;
+        font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui,
+          Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo',
+          'Malgun Gothic', sans-serif;
       }
 
       .font-display {
-        font-family:
-          'Gothic A1',
-          'Noto Sans KR',
-          sans-serif;
+        font-family: 'Gothic A1', 'Noto Sans KR', sans-serif;
       }
     </style>
   </head>
 
-  <body
-    class="bg-[#FBF9F5] text-[#2B2621] antialiased selection:bg-[#B9832A] selection:text-white"
-  >
+  <body class="bg-[#FBF9F5] text-[#2B2621] antialiased selection:bg-[#B9832A] selection:text-white">
     <div id="root"></div>
-
-    <script
-      type="module"
-      src="/src/main.tsx"
-    ></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
