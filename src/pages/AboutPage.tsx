@@ -67,7 +67,7 @@ export const AboutPage: React.FC = () => {
                 <dd className="font-bold text-ink">{settings.establishedYear || '관리자 입력 필요'}</dd>
               </div>
               <div className="flex justify-between gap-3 border-b border-line/60 py-2">
-                <dt className="text-ink-soft">사업자등록번호</dt>
+                <dt className="text-ink-soft">고유번호</dt>
                 <dd className="font-bold text-ink">{settings.businessRegistrationNumber || '관리자 입력 필요'}</dd>
               </div>
             </dl>

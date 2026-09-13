@@ -19,6 +19,12 @@ import {
   ActiveTab,
   AboutSubTab,
   DebugLog,
+  GovernanceDocument,
+  MeetingRecord,
+  MembershipApplication,
+  DonationInquiry,
+  BusinessResult,
+  SocialValueMetric,
 } from '../types';
 import {
   INITIAL_SETTINGS,
@@ -29,6 +35,10 @@ import {
   INITIAL_POPUPS,
   INITIAL_PARTNERS,
   INITIAL_GALLERY_CATEGORIES,
+  INITIAL_GOVERNANCE_DOCUMENTS,
+  INITIAL_MEETINGS,
+  INITIAL_BUSINESS_RESULTS,
+  INITIAL_SOCIAL_VALUE_METRICS,
 } from '../data/initialData';
 import { formatImageUrl } from '../utils/imageUrl';
 import { sanitizeForFirestore } from '../utils/sanitizeForFirestore';
@@ -71,6 +81,14 @@ interface ValueTogetherContextType {
   galleryCategories: string[];
   popups: PopupItem[];
   partners: PartnerItem[];
+  governanceDocuments: GovernanceDocument[];
+  meetings: MeetingRecord[];
+  businessResults: BusinessResult[];
+  socialValueMetrics: SocialValueMetric[];
+  membershipApplications: MembershipApplication[];
+  donationInquiries: DonationInquiry[];
+  pendingMembershipCount: number;
+  pendingDonationCount: number;
   participations: ParticipationApplication[];
   inquiries: ContactInquiry[];
   pendingParticipationsCount: number;
@@ -141,6 +159,25 @@ interface ValueTogetherContextType {
   deletePopup: (id: string) => void;
   showPopupsFlag: number;
   triggerPopupShow: () => void;
+
+  addGovernanceDocument: (item: Omit<GovernanceDocument, 'id'>) => Promise<boolean>;
+  updateGovernanceDocument: (id: string, item: Partial<GovernanceDocument>) => Promise<boolean>;
+  deleteGovernanceDocument: (id: string) => Promise<boolean>;
+  addMeeting: (item: Omit<MeetingRecord, 'id'>) => Promise<boolean>;
+  updateMeeting: (id: string, item: Partial<MeetingRecord>) => Promise<boolean>;
+  deleteMeeting: (id: string) => Promise<boolean>;
+  addBusinessResult: (item: Omit<BusinessResult, 'id'>) => Promise<boolean>;
+  updateBusinessResult: (id: string, item: Partial<BusinessResult>) => Promise<boolean>;
+  deleteBusinessResult: (id: string) => Promise<boolean>;
+  addSocialValueMetric: (item: Omit<SocialValueMetric, 'id'>) => Promise<boolean>;
+  updateSocialValueMetric: (id: string, item: Partial<SocialValueMetric>) => Promise<boolean>;
+  deleteSocialValueMetric: (id: string) => Promise<boolean>;
+  submitMembershipApplication: (item: Omit<MembershipApplication, 'id' | 'createdAt' | 'status'>) => Promise<void>;
+  updateMembershipStatus: (id: string, status: MembershipApplication['status']) => Promise<void>;
+  deleteMembershipApplication: (id: string) => Promise<void>;
+  submitDonationInquiry: (item: Omit<DonationInquiry, 'id' | 'createdAt' | 'status'>) => Promise<void>;
+  updateDonationStatus: (id: string, status: DonationInquiry['status']) => Promise<void>;
+  deleteDonationInquiry: (id: string) => Promise<void>;
 
   submitParticipation: (item: Omit<ParticipationApplication, 'id' | 'createdAt' | 'status'>) => Promise<void>;
   updateParticipationStatus: (id: string, status: ParticipationApplication['status']) => Promise<void>;
@@ -214,7 +251,7 @@ const parsePath = (pathname: string, search: string): ParsedPath => {
     return res;
   }
 
-  const validTabs: ActiveTab[] = ['main', 'about', 'business', 'news', 'gallery', 'partners', 'contact', 'privacy', 'terms'];
+  const validTabs: ActiveTab[] = ['main', 'about', 'business', 'news', 'gallery', 'partners', 'membership', 'donation', 'governance', 'social-value', 'contact', 'privacy', 'terms'];
   const tabPart = clean.replace(/^\//, '').replace(/\/$/, '');
   if (tabPart === 'admin') {
     return { ...res, tab: 'main', adminOpen: true };
@@ -285,16 +322,20 @@ function writeLocalCache(key: string, value: unknown) {
 }
 
 export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<OrgSettings>(() => readLocalCache('gachihamkke_settings', INITIAL_SETTINGS));
-  const [timeline, setTimeline] = useState<TimelineItem[]>(() => readLocalCache('gachihamkke_timeline', INITIAL_TIMELINE));
-  const [programs, setPrograms] = useState<ProgramItem[]>(() => readLocalCache('gachihamkke_programs', INITIAL_PROGRAMS));
-  const [notices, setNotices] = useState<NoticeItem[]>(() => readLocalCache('gachihamkke_notices', INITIAL_NOTICES));
-  const [gallery, setGallery] = useState<GalleryItem[]>(() => readLocalCache('gachihamkke_gallery', INITIAL_GALLERY));
+  const [settings, setSettings] = useState<OrgSettings>(() => readLocalCache('gachihamkke_v10_settings', INITIAL_SETTINGS));
+  const [timeline, setTimeline] = useState<TimelineItem[]>(() => readLocalCache('gachihamkke_v10_timeline', INITIAL_TIMELINE));
+  const [programs, setPrograms] = useState<ProgramItem[]>(() => readLocalCache('gachihamkke_v10_programs', INITIAL_PROGRAMS));
+  const [notices, setNotices] = useState<NoticeItem[]>(() => readLocalCache('gachihamkke_v10_notices', INITIAL_NOTICES));
+  const [gallery, setGallery] = useState<GalleryItem[]>(() => readLocalCache('gachihamkke_v10_gallery', INITIAL_GALLERY));
   const [galleryCategories, setGalleryCategoriesState] = useState<string[]>(() =>
-    readLocalCache('gachihamkke_gallery_categories', INITIAL_GALLERY_CATEGORIES)
+    readLocalCache('gachihamkke_v10_gallery_categories', INITIAL_GALLERY_CATEGORIES)
   );
-  const [popups, setPopups] = useState<PopupItem[]>(() => readLocalCache('gachihamkke_popups', INITIAL_POPUPS));
-  const [partners, setPartners] = useState<PartnerItem[]>(() => readLocalCache('gachihamkke_partners', INITIAL_PARTNERS));
+  const [popups, setPopups] = useState<PopupItem[]>(() => readLocalCache('gachihamkke_v10_popups', INITIAL_POPUPS));
+  const [partners, setPartners] = useState<PartnerItem[]>(() => readLocalCache('gachihamkke_v10_partners', INITIAL_PARTNERS));
+  const [governanceDocuments, setGovernanceDocuments] = useState<GovernanceDocument[]>(() => readLocalCache('gachihamkke_v10_governance', INITIAL_GOVERNANCE_DOCUMENTS));
+  const [meetings, setMeetings] = useState<MeetingRecord[]>(() => readLocalCache('gachihamkke_v10_meetings', INITIAL_MEETINGS));
+  const [businessResults, setBusinessResults] = useState<BusinessResult[]>(() => readLocalCache('gachihamkke_v10_business_results', INITIAL_BUSINESS_RESULTS));
+  const [socialValueMetrics, setSocialValueMetrics] = useState<SocialValueMetric[]>(() => readLocalCache('gachihamkke_v10_social_value', INITIAL_SOCIAL_VALUE_METRICS));
 
   // Always-fresh refs — see the ARCHITECTURE NOTES comment above.
   const timelineRef = useRef(timeline);
@@ -304,6 +345,10 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   const galleryCategoriesRef = useRef(galleryCategories);
   const popupsRef = useRef(popups);
   const partnersRef = useRef(partners);
+  const governanceRef = useRef(governanceDocuments);
+  const meetingsRef = useRef(meetings);
+  const businessResultsRef = useRef(businessResults);
+  const socialValueRef = useRef(socialValueMetrics);
 
   const applyTimeline = (next: TimelineItem[]) => { timelineRef.current = next; setTimeline(next); };
   const applyPrograms = (next: ProgramItem[]) => { programsRef.current = next; setPrograms(next); };
@@ -312,14 +357,22 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   const applyGalleryCategories = (next: string[]) => { galleryCategoriesRef.current = next; setGalleryCategoriesState(next); };
   const applyPopups = (next: PopupItem[]) => { popupsRef.current = next; setPopups(next); };
   const applyPartners = (next: PartnerItem[]) => { partnersRef.current = next; setPartners(next); };
+  const applyGovernance = (next: GovernanceDocument[]) => { governanceRef.current = next; setGovernanceDocuments(next); };
+  const applyMeetings = (next: MeetingRecord[]) => { meetingsRef.current = next; setMeetings(next); };
+  const applyBusinessResults = (next: BusinessResult[]) => { businessResultsRef.current = next; setBusinessResults(next); };
+  const applySocialValue = (next: SocialValueMetric[]) => { socialValueRef.current = next; setSocialValueMetrics(next); };
 
   // 개인정보가 포함된 데이터(참여신청/문의)는 절대 localStorage에 저장하지
   // 않고, 관리자로 로그인했을 때만 Firestore에서 직접 구독합니다.
   const [participations, setParticipations] = useState<ParticipationApplication[]>([]);
   const [inquiries, setInquiries] = useState<ContactInquiry[]>([]);
+  const [membershipApplications, setMembershipApplications] = useState<MembershipApplication[]>([]);
+  const [donationInquiries, setDonationInquiries] = useState<DonationInquiry[]>([]);
 
   const pendingParticipationsCount = participations.filter((p) => p.status === '접수완료').length;
   const pendingInquiriesCount = inquiries.filter((i) => i.status === '대기중').length;
+  const pendingMembershipCount = membershipApplications.filter((m) => m.status === '신청접수').length;
+  const pendingDonationCount = donationInquiries.filter((d) => d.status === '접수완료').length;
 
   const markParticipationsAsRead = async () => {
     const targets = participations.filter((p) => p.status === '접수완료');
@@ -556,6 +609,10 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         }
         if (Array.isArray(byId['popups']?.items)) applyPopups(byId['popups'].items);
         if (Array.isArray(byId['partners']?.items)) applyPartners(byId['partners'].items);
+        if (Array.isArray(byId['governance']?.documents)) applyGovernance(byId['governance'].documents);
+        if (Array.isArray(byId['governance']?.meetings)) applyMeetings(byId['governance'].meetings);
+        if (Array.isArray(byId['businessResults']?.items)) applyBusinessResults(byId['businessResults'].items);
+        if (Array.isArray(byId['socialValue']?.items)) applySocialValue(byId['socialValue'].items);
 
         setLastSyncTime(new Date().toLocaleTimeString('ko-KR'));
         setSyncStatus('success');
@@ -573,6 +630,9 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
           batch.set(doc(db, 'content', 'gallery'), { items: gallery, categories: galleryCategories, updatedAt: nowIso }, { merge: true });
           batch.set(doc(db, 'content', 'popups'), { items: popups, updatedAt: nowIso }, { merge: true });
           batch.set(doc(db, 'content', 'partners'), { items: partners, updatedAt: nowIso }, { merge: true });
+          batch.set(doc(db, 'content', 'governance'), { documents: governanceDocuments, meetings, updatedAt: nowIso }, { merge: true });
+          batch.set(doc(db, 'content', 'businessResults'), { items: businessResults, updatedAt: nowIso }, { merge: true });
+          batch.set(doc(db, 'content', 'socialValue'), { items: socialValueMetrics, updatedAt: nowIso }, { merge: true });
           batch.commit().catch((err) => handleFirestoreError(err, OperationType.WRITE, 'content (initial seed)'));
         }
       },
@@ -607,7 +667,17 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       (snap) => setInquiries(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ContactInquiry))),
       (error) => handleFirestoreError(error, OperationType.GET, 'inquiries')
     );
-    return () => { unsubParticipations(); unsubInquiries(); };
+    const unsubMemberships = onSnapshot(
+      query(collection(db, 'memberApplications'), orderBy('createdAt', 'desc')),
+      (snap) => setMembershipApplications(snap.docs.map((d) => ({ id: d.id, ...d.data() } as MembershipApplication))),
+      (error) => handleFirestoreError(error, OperationType.GET, 'memberApplications')
+    );
+    const unsubDonations = onSnapshot(
+      query(collection(db, 'donationInquiries'), orderBy('createdAt', 'desc')),
+      (snap) => setDonationInquiries(snap.docs.map((d) => ({ id: d.id, ...d.data() } as DonationInquiry))),
+      (error) => handleFirestoreError(error, OperationType.GET, 'donationInquiries')
+    );
+    return () => { unsubParticipations(); unsubInquiries(); unsubMemberships(); unsubDonations(); };
   }, [isAdmin]);
 
   // ── 페이지뷰 카운터 (firestore.rules의 `visits` 컬렉션 참고) ──
@@ -663,6 +733,10 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         if (Array.isArray(byId['gallery']?.items)) applyGallery(byId['gallery'].items);
         if (Array.isArray(byId['popups']?.items)) applyPopups(byId['popups'].items);
         if (Array.isArray(byId['partners']?.items)) applyPartners(byId['partners'].items);
+        if (Array.isArray(byId['governance']?.documents)) applyGovernance(byId['governance'].documents);
+        if (Array.isArray(byId['governance']?.meetings)) applyMeetings(byId['governance'].meetings);
+        if (Array.isArray(byId['businessResults']?.items)) applyBusinessResults(byId['businessResults'].items);
+        if (Array.isArray(byId['socialValue']?.items)) applySocialValue(byId['socialValue'].items);
         setLastSyncTime(new Date().toLocaleTimeString('ko-KR'));
         addDebugLog('success', 'Firestore에서 최신 데이터를 새로고침했습니다.');
       }
@@ -696,14 +770,18 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   // Local-storage caching of PUBLIC, non-personal content only (instant
   // paint + offline resilience). Never used for settings/participations/
   // inquiries beyond what's declared here.
-  useEffect(() => { writeLocalCache('gachihamkke_settings', settings); }, [settings]);
-  useEffect(() => { writeLocalCache('gachihamkke_timeline', timeline); }, [timeline]);
-  useEffect(() => { writeLocalCache('gachihamkke_programs', programs); }, [programs]);
-  useEffect(() => { writeLocalCache('gachihamkke_notices', notices); }, [notices]);
-  useEffect(() => { writeLocalCache('gachihamkke_gallery', gallery); }, [gallery]);
-  useEffect(() => { writeLocalCache('gachihamkke_gallery_categories', galleryCategories); }, [galleryCategories]);
-  useEffect(() => { writeLocalCache('gachihamkke_popups', popups); }, [popups]);
-  useEffect(() => { writeLocalCache('gachihamkke_partners', partners); }, [partners]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_settings', settings); }, [settings]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_timeline', timeline); }, [timeline]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_programs', programs); }, [programs]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_notices', notices); }, [notices]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_gallery', gallery); }, [gallery]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_gallery_categories', galleryCategories); }, [galleryCategories]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_popups', popups); }, [popups]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_partners', partners); }, [partners]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_governance', governanceDocuments); }, [governanceDocuments]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_meetings', meetings); }, [meetings]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_business_results', businessResults); }, [businessResults]);
+  useEffect(() => { writeLocalCache('gachihamkke_v10_social_value', socialValueMetrics); }, [socialValueMetrics]);
 
   // Firestore mutation helper — writes to one of the split `content/{docName}`
   // documents. See sanitizeForFirestore.ts for why every payload is passed
@@ -970,6 +1048,45 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     postMutation('popups', { items: next }, `팝업 삭제 (ID: ${id})`, previous);
   };
 
+  // ── V10 governance / performance CRUD ──
+  const addGovernanceDocument = async (item: Omit<GovernanceDocument, 'id'>) => {
+    const next = [{ ...item, id: `gov-${Date.now()}` }, ...governanceRef.current];
+    const ok = await postMutation('governance', { documents: next, meetings: meetingsRef.current }, `경영공시 자료 추가: ${item.title}`, { documents: governanceRef.current, meetings: meetingsRef.current });
+    if (ok) applyGovernance(next);
+    return ok;
+  };
+  const updateGovernanceDocument = async (id: string, item: Partial<GovernanceDocument>) => {
+    const previous = governanceRef.current; const next = previous.map((d) => d.id === id ? { ...d, ...item } : d);
+    const ok = await postMutation('governance', { documents: next, meetings: meetingsRef.current }, `경영공시 자료 수정: ${id}`, { documents: previous, meetings: meetingsRef.current });
+    if (ok) applyGovernance(next); return ok;
+  };
+  const deleteGovernanceDocument = async (id: string) => {
+    const previous = governanceRef.current; const next = previous.filter((d) => d.id !== id);
+    const ok = await postMutation('governance', { documents: next, meetings: meetingsRef.current }, `경영공시 자료 삭제: ${id}`, { documents: previous, meetings: meetingsRef.current });
+    if (ok) applyGovernance(next); return ok;
+  };
+  const addMeeting = async (item: Omit<MeetingRecord, 'id'>) => {
+    const next = [{ ...item, id: `meeting-${Date.now()}` }, ...meetingsRef.current];
+    const ok = await postMutation('governance', { documents: governanceRef.current, meetings: next }, `회의자료 추가: ${item.title}`, { documents: governanceRef.current, meetings: meetingsRef.current });
+    if (ok) applyMeetings(next); return ok;
+  };
+  const updateMeeting = async (id: string, item: Partial<MeetingRecord>) => {
+    const previous = meetingsRef.current; const next = previous.map((m) => m.id === id ? { ...m, ...item } : m);
+    const ok = await postMutation('governance', { documents: governanceRef.current, meetings: next }, `회의자료 수정: ${id}`, { documents: governanceRef.current, meetings: previous });
+    if (ok) applyMeetings(next); return ok;
+  };
+  const deleteMeeting = async (id: string) => {
+    const previous = meetingsRef.current; const next = previous.filter((m) => m.id !== id);
+    const ok = await postMutation('governance', { documents: governanceRef.current, meetings: next }, `회의자료 삭제: ${id}`, { documents: governanceRef.current, meetings: previous });
+    if (ok) applyMeetings(next); return ok;
+  };
+  const addBusinessResult = async (item: Omit<BusinessResult, 'id'>) => { const next=[{...item,id:`result-${Date.now()}`},...businessResultsRef.current]; const ok=await postMutation('businessResults',{items:next},`사업성과 추가: ${item.title}`,{items:businessResultsRef.current}); if(ok) applyBusinessResults(next); return ok; };
+  const updateBusinessResult = async (id:string,item:Partial<BusinessResult>) => { const prev=businessResultsRef.current; const next=prev.map(x=>x.id===id?{...x,...item}:x); const ok=await postMutation('businessResults',{items:next},`사업성과 수정: ${id}`,{items:prev}); if(ok) applyBusinessResults(next); return ok; };
+  const deleteBusinessResult = async (id:string) => { const prev=businessResultsRef.current; const next=prev.filter(x=>x.id!==id); const ok=await postMutation('businessResults',{items:next},`사업성과 삭제: ${id}`,{items:prev}); if(ok) applyBusinessResults(next); return ok; };
+  const addSocialValueMetric = async (item: Omit<SocialValueMetric, 'id'>) => { const next=[{...item,id:`sv-${Date.now()}`},...socialValueRef.current]; const ok=await postMutation('socialValue',{items:next},`사회적 가치 지표 추가: ${item.label}`,{items:socialValueRef.current}); if(ok) applySocialValue(next); return ok; };
+  const updateSocialValueMetric = async (id:string,item:Partial<SocialValueMetric>) => { const prev=socialValueRef.current; const next=prev.map(x=>x.id===id?{...x,...item}:x); const ok=await postMutation('socialValue',{items:next},`사회적 가치 지표 수정: ${id}`,{items:prev}); if(ok) applySocialValue(next); return ok; };
+  const deleteSocialValueMetric = async (id:string) => { const prev=socialValueRef.current; const next=prev.filter(x=>x.id!==id); const ok=await postMutation('socialValue',{items:next},`사회적 가치 지표 삭제: ${id}`,{items:prev}); if(ok) applySocialValue(next); return ok; };
+
   // ── Participations (협력 및 참여 신청) ──
   // Personal information: created directly against Firestore (not through
   // the localStorage-cached `content` documents above) and gated entirely
@@ -1005,6 +1122,22 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       handleFirestoreError(err, OperationType.DELETE, `participations/${id}`);
     }
   };
+
+  // ── Membership applications ──
+  const submitMembershipApplication = async (item: Omit<MembershipApplication, 'id' | 'createdAt' | 'status'>) => {
+    const payload = sanitizeForFirestore({ ...item, createdAt: new Date().toISOString().replace('T',' ').substring(0,16), status: '신청접수' as const });
+    try { await addDoc(collection(db,'memberApplications'), payload); } catch(err) { handleFirestoreError(err,OperationType.CREATE,'memberApplications'); throw err; }
+  };
+  const updateMembershipStatus = async (id:string,status:MembershipApplication['status']) => { setMembershipApplications(prev=>prev.map(x=>x.id===id?{...x,status}:x)); try { await setDoc(doc(db,'memberApplications',id),{status},{merge:true}); writeAuditLog('memberApplications',`조합원 신청 상태 변경 (ID: ${id}) → ${status}`); } catch(err){handleFirestoreError(err,OperationType.UPDATE,`memberApplications/${id}`);} };
+  const deleteMembershipApplication = async (id:string) => { setMembershipApplications(prev=>prev.filter(x=>x.id!==id)); try { await deleteDoc(doc(db,'memberApplications',id)); writeAuditLog('memberApplications',`조합원 신청 삭제 (ID: ${id})`);} catch(err){handleFirestoreError(err,OperationType.DELETE,`memberApplications/${id}`);} };
+
+  // ── Donation inquiries (manual transfer / receipt request) ──
+  const submitDonationInquiry = async (item: Omit<DonationInquiry, 'id' | 'createdAt' | 'status'>) => {
+    const payload = sanitizeForFirestore({ ...item, createdAt:new Date().toISOString().replace('T',' ').substring(0,16), status:'접수완료' as const });
+    try { await addDoc(collection(db,'donationInquiries'),payload); } catch(err){handleFirestoreError(err,OperationType.CREATE,'donationInquiries'); throw err;}
+  };
+  const updateDonationStatus = async (id:string,status:DonationInquiry['status']) => { setDonationInquiries(prev=>prev.map(x=>x.id===id?{...x,status}:x)); try {await setDoc(doc(db,'donationInquiries',id),{status},{merge:true}); writeAuditLog('donationInquiries',`후원 문의 상태 변경 (ID: ${id}) → ${status}`);}catch(err){handleFirestoreError(err,OperationType.UPDATE,`donationInquiries/${id}`);} };
+  const deleteDonationInquiry = async (id:string) => { setDonationInquiries(prev=>prev.filter(x=>x.id!==id)); try {await deleteDoc(doc(db,'donationInquiries',id)); writeAuditLog('donationInquiries',`후원 문의 삭제 (ID: ${id})`);}catch(err){handleFirestoreError(err,OperationType.DELETE,`donationInquiries/${id}`);} };
 
   // ── Inquiries (문의하기) ──
   const submitInquiry = async (item: Omit<ContactInquiry, 'id' | 'createdAt' | 'status'>) => {
@@ -1068,6 +1201,9 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     const previousGallery = { items: galleryRef.current, categories: galleryCategoriesRef.current };
     const previousPopups = { items: popupsRef.current };
     const previousPartners = { items: partnersRef.current };
+    const previousGovernance = { documents: governanceRef.current, meetings: meetingsRef.current };
+    const previousBusinessResults = { items: businessResultsRef.current };
+    const previousSocialValue = { items: socialValueRef.current };
 
     setSettings(INITIAL_SETTINGS);
     applyTimeline(INITIAL_TIMELINE);
@@ -1077,6 +1213,10 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     applyGalleryCategories(INITIAL_GALLERY_CATEGORIES);
     applyPopups(INITIAL_POPUPS);
     applyPartners(INITIAL_PARTNERS);
+    applyGovernance(INITIAL_GOVERNANCE_DOCUMENTS);
+    applyMeetings(INITIAL_MEETINGS);
+    applyBusinessResults(INITIAL_BUSINESS_RESULTS);
+    applySocialValue(INITIAL_SOCIAL_VALUE_METRICS);
     postMutation('settings', INITIAL_SETTINGS, '초기화: 기본정보', previousSettings);
     postMutation('timeline', { items: INITIAL_TIMELINE }, '초기화: 연혁', previousTimeline);
     postMutation('programs', { items: INITIAL_PROGRAMS }, '초기화: 사업', previousPrograms);
@@ -1084,6 +1224,9 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     postMutation('gallery', { items: INITIAL_GALLERY, categories: INITIAL_GALLERY_CATEGORIES }, '초기화: 갤러리', previousGallery);
     postMutation('popups', { items: INITIAL_POPUPS }, '초기화: 팝업', previousPopups);
     postMutation('partners', { items: INITIAL_PARTNERS }, '초기화: 협력기관', previousPartners);
+    postMutation('governance', { documents: INITIAL_GOVERNANCE_DOCUMENTS, meetings: INITIAL_MEETINGS }, '초기화: 투명경영', previousGovernance);
+    postMutation('businessResults', { items: INITIAL_BUSINESS_RESULTS }, '초기화: 사업성과', previousBusinessResults);
+    postMutation('socialValue', { items: INITIAL_SOCIAL_VALUE_METRICS }, '초기화: 사회적 가치', previousSocialValue);
   };
 
   return (
@@ -1097,6 +1240,14 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
         galleryCategories,
         popups,
         partners,
+        governanceDocuments,
+        meetings,
+        businessResults,
+        socialValueMetrics,
+        membershipApplications,
+        donationInquiries,
+        pendingMembershipCount,
+        pendingDonationCount,
         participations,
         inquiries,
         pendingParticipationsCount,

@@ -5,7 +5,7 @@ import { useValueTogether } from '../context/ValueTogetherContext';
 import { Logo } from '../components/common/Logo';
 import {
   LayoutDashboard, Settings, Briefcase, Newspaper, Image as ImageIcon, Handshake,
-  Bell, HeartHandshake, MessageSquare, ScrollText, LogOut, ExternalLink, Menu, X, ShieldCheck,
+  Bell, HeartHandshake, MessageSquare, ScrollText, LogOut, ExternalLink, Menu, X, ShieldCheck, Scale, Users, Banknote, BarChart3,
 } from 'lucide-react';
 
 import { DashboardTab } from './tabs/DashboardTab';
@@ -19,13 +19,17 @@ import { ParticipationsTab } from './tabs/ParticipationsTab';
 import { InquiriesTab } from './tabs/InquiriesTab';
 import { LogsTab } from './tabs/LogsTab';
 import { SecurityTab } from './tabs/SecurityTab';
+import { GovernanceTab } from './tabs/GovernanceTab';
+import { MembershipApplicationsTab } from './tabs/MembershipApplicationsTab';
+import { DonationInquiriesTab } from './tabs/DonationInquiriesTab';
+import { PerformanceTab } from './tabs/PerformanceTab';
 
 type AdminTab =
   | 'dashboard' | 'settings' | 'programs' | 'notices' | 'gallery'
-  | 'partners' | 'popups' | 'participations' | 'inquiries' | 'logs' | 'security';
+  | 'partners' | 'popups' | 'participations' | 'inquiries' | 'governance' | 'membership' | 'donations' | 'performance' | 'logs' | 'security';
 
 export const AdminShell: React.FC = () => {
-  const { setAdminOpen, logoutAdmin, pendingParticipationsCount, pendingInquiriesCount } = useValueTogether();
+  const { setAdminOpen, logoutAdmin, pendingParticipationsCount, pendingInquiriesCount, pendingMembershipCount, pendingDonationCount } = useValueTogether();
   const [tab, setTab] = useState<AdminTab>('dashboard');
   const [navOpen, setNavOpen] = useState(false);
 
@@ -39,6 +43,10 @@ export const AdminShell: React.FC = () => {
     { key: 'popups', label: '팝업 관리', icon: Bell },
     { key: 'participations', label: '참여신청', icon: HeartHandshake, badge: pendingParticipationsCount },
     { key: 'inquiries', label: '문의사항', icon: MessageSquare, badge: pendingInquiriesCount },
+    { key: 'governance', label: '투명경영/공시', icon: Scale },
+    { key: 'membership', label: '조합원 신청', icon: Users, badge: pendingMembershipCount },
+    { key: 'donations', label: '후원·기부', icon: Banknote, badge: pendingDonationCount },
+    { key: 'performance', label: '사업성과/사회적가치', icon: BarChart3 },
     { key: 'logs', label: '로그/백업', icon: ScrollText },
     { key: 'security', label: '보안', icon: ShieldCheck },
   ];
@@ -59,6 +67,10 @@ export const AdminShell: React.FC = () => {
       case 'popups': return <PopupsTab />;
       case 'participations': return <ParticipationsTab />;
       case 'inquiries': return <InquiriesTab />;
+      case 'governance': return <GovernanceTab />;
+      case 'membership': return <MembershipApplicationsTab />;
+      case 'donations': return <DonationInquiriesTab />;
+      case 'performance': return <PerformanceTab />;
       case 'logs': return <LogsTab />;
       case 'security': return <SecurityTab />;
       default: return null;

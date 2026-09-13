@@ -14,6 +14,10 @@ import { NewsPage } from './pages/NewsPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { PartnersPage } from './pages/PartnersPage';
 import { ContactPage } from './pages/ContactPage';
+import { MembershipPage } from './pages/MembershipPage';
+import { DonationPage } from './pages/DonationPage';
+import { GovernancePage } from './pages/GovernancePage';
+import { SocialValuePage } from './pages/SocialValuePage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { TermsPage } from './pages/TermsPage';
 import { NoticeDetailPage } from './pages/NoticeDetailPage';
@@ -56,6 +60,14 @@ const SiteShell: React.FC = () => {
       page = <PartnersPage />; break;
     case 'contact':
       page = <ContactPage />; break;
+    case 'membership':
+      page = <MembershipPage />; break;
+    case 'donation':
+      page = <DonationPage />; break;
+    case 'governance':
+      page = <GovernancePage />; break;
+    case 'social-value':
+      page = <SocialValuePage />; break;
     case 'privacy':
       page = <PrivacyPolicyPage />; break;
     case 'terms':

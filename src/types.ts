@@ -54,17 +54,22 @@ export interface TimelineItem {
 }
 
 export type ProgramCategory =
-  | '사회서비스'
-  | '교육사업'
-  | '지역사회사업'
-  | '돌봄복지사업'
-  | '일자리자립지원'
-  | '기타사업';
+  | '주사업'
+  | '기타사업'
+  | '장애인 활동 지원 인재 양성'
+  | '노인 관련 민간 자격증 발급'
+  | '주민 역량 강화 및 교육'
+  | '사회복지 위탁사업'
+  | '조합원·직원 교육'
+  | '조합 간 협력'
+  | '홍보·지역사회사업';
 
 export interface ProgramItem {
   id: string;
   code: string; // '01', '02', '03' ... 카드 표시용 일련번호
   category: ProgramCategory;
+  /** 정관상 주사업/기타사업 구분 */
+  businessType?: '주사업' | '기타사업';
   title: string;
   subtitle: string;
   summary: string;
@@ -148,6 +153,84 @@ export type ParticipationType = '조합원가입' | '자원봉사' | '후원협�
  * 컬렉션(participations)에 저장하며, Firestore Rules로 "생성만 공개 허용,
  * 읽기/수정/삭제는 관리자만"이 강제됩니다 (firestore.rules 참고).
  */
+export interface GovernanceDocument {
+  id: string;
+  category: '경영공시' | '정관·규정' | '총회' | '이사회' | '사업계획' | '결산·사업보고' | '기부금 공개' | '기타';
+  year: string;
+  title: string;
+  description?: string;
+  fileUrl: string;
+  storagePath?: string;
+  fileName: string;
+  fileSize?: number;
+  publishedAt: string;
+  isPublic: boolean;
+  order: number;
+}
+
+export interface MeetingRecord {
+  id: string;
+  type: '총회' | '이사회';
+  year: string;
+  title: string;
+  date: string;
+  summary?: string;
+  documentIds?: string[];
+  isPublic: boolean;
+  order: number;
+}
+
+export interface MembershipApplication {
+  id: string;
+  memberType: '생산자조합원' | '소비자조합원' | '직원조합원' | '자원봉사자조합원' | '후원자조합원';
+  name: string;
+  phone: string;
+  email?: string;
+  organization?: string;
+  desiredShareCount: number;
+  privacyAgreed: boolean;
+  createdAt: string;
+  status: '신청접수' | '자격확인' | '가입승인' | '출자금납입확인' | '가입완료' | '반려';
+}
+
+export interface DonationInquiry {
+  id: string;
+  donorName: string;
+  phone: string;
+  email?: string;
+  amount: number;
+  purpose?: string;
+  receiptRequested: boolean;
+  privacyAgreed: boolean;
+  createdAt: string;
+  status: '접수완료' | '확인중' | '처리완료';
+}
+
+export interface BusinessResult {
+  id: string;
+  year: string;
+  programId?: string;
+  title: string;
+  summary: string;
+  participantCount?: number;
+  sessionCount?: number;
+  completionCount?: number;
+  customMetrics?: { label: string; value: string }[];
+  isPublic: boolean;
+  order: number;
+}
+
+export interface SocialValueMetric {
+  id: string;
+  year: string;
+  label: string;
+  value: string;
+  unit?: string;
+  description?: string;
+  isPublic: boolean;
+  order: number;
+}
+
 export interface ParticipationApplication {
   id: string;
   type: ParticipationType;
@@ -214,6 +297,7 @@ export interface OrgSettings {
   establishedYear: string;
   /** 사업자(고유번호) 등록번호 — 관리자 입력 전까지는 비워둠 */
   businessRegistrationNumber?: string;
+  businessTypeLabel?: string;
   address: string;
   mapEmbedUrl?: string;
   phone: string;
@@ -244,6 +328,10 @@ export type ActiveTab =
   | 'gallery'
   | 'partners'
   | 'contact'
+  | 'membership'
+  | 'donation'
+  | 'governance'
+  | 'social-value'
   | 'privacy'
   | 'terms'
   | 'news-detail'

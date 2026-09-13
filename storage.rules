@@ -68,6 +68,31 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
+
+    // 투명경영·경영공시 공개 문서. 관리자만 업로드/교체/삭제하고 방문자는 읽기만 가능.
+    match /governance/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.size <= 25 * 1024 * 1024
+        && request.resource.contentType in [
+          'application/pdf',
+          'application/haansofthwp',
+          'application/vnd.hancom.hwp',
+          'application/x-hwp',
+          'application/vnd.hancom.hwpx',
+          'application/x-hwpx',
+          'application/octet-stream',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-powerpoint',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        ]
+        && request.resource.name.matches('.*\\.(pdf|PDF|hwp|HWP|hwpx|HWPX|doc|DOC|docx|DOCX|xls|XLS|xlsx|XLSX|ppt|PPT|pptx|PPTX)$');
+      allow delete: if isAdmin();
+    }
+
     // 기관 기본정보 이미지(대표 이미지, 로고, 대표자 사진 등): 1개당 최대 10MiB.
     match /settings/{allPaths=**} {
       allow read: if true;

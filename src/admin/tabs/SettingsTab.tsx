@@ -83,7 +83,7 @@ export const SettingsTab: React.FC = () => {
           <Field label="단체명"><input className={inputCls} value={form.name} onChange={(e) => set('name', e.target.value)} /></Field>
           <Field label="영문명"><input className={inputCls} value={form.englishName} onChange={(e) => set('englishName', e.target.value)} /></Field>
           <Field label="설립연도"><input className={inputCls} value={form.establishedYear} onChange={(e) => set('establishedYear', e.target.value)} placeholder="예: 2024" /></Field>
-          <Field label="사업자등록번호"><input className={inputCls} value={form.businessRegistrationNumber || ''} onChange={(e) => set('businessRegistrationNumber', e.target.value)} /></Field>
+          <Field label="고유번호"><input className={inputCls} value={form.businessRegistrationNumber || ''} onChange={(e) => set('businessRegistrationNumber', e.target.value)} /></Field>
         </div>
         <Field label="메인 슬로건 (제목)"><input className={inputCls} value={form.sloganMain} onChange={(e) => set('sloganMain', e.target.value)} /></Field>
         <Field label="메인 슬로건 (부제)"><textarea className={inputCls} rows={2} value={form.sloganSub} onChange={(e) => set('sloganSub', e.target.value)} /></Field>

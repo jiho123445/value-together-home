@@ -1,5 +1,5 @@
 // 자동 콘텐츠 백업 (.github/workflows/backup.yml에서 매일 실행).
-// `content/{settings,timeline,programs,notices,gallery,popups,partners}`
+// `content/{settings,timeline,programs,notices,gallery,popups,partners,governance,businessResults,socialValue}`
 // 문서(firestore.rules에서 `allow read: if true`로 전체 공개된 문서들)를
 // Firestore REST API로 가져와 backups/ 아래에 날짜별 JSON 스냅샷을 만듭니다.
 //
@@ -16,7 +16,7 @@ dotenv.config({ path: '.env.local' });
 
 const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || '';
 const DATABASE_ID = process.env.VITE_FIREBASE_DATABASE_ID || '(default)';
-const DOC_NAMES = ['settings', 'timeline', 'programs', 'notices', 'gallery', 'popups', 'partners'];
+const DOC_NAMES = ['settings', 'timeline', 'programs', 'notices', 'gallery', 'popups', 'partners', 'governance', 'businessResults', 'socialValue'];
 const BACKUPS_DIR = path.join(process.cwd(), 'backups');
 
 function unwrapFirestoreValue(value) {

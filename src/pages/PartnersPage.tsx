@@ -4,22 +4,22 @@ import { PageBanner } from '../components/common/PageBanner';
 import { ParticipationType } from '../types';
 import { HONEYPOT_FIELD_NAME, honeypotStyle, isLikelyBot, checkRateLimit } from '../utils/spamGuard';
 import { isSafeHttpUrl } from '../utils/safeUrl';
-import { CheckCircle2, HeartHandshake } from 'lucide-react';
+import { CheckCircle2, HeartHandshake, Users, Banknote, Handshake } from 'lucide-react';
 
-const TYPES: ParticipationType[] = ['조합원가입', '자원봉사', '후원협력', '기관협력'];
+type ParticipationRequestType = Exclude<ParticipationType, '조합원가입'>;
+const TYPES: ParticipationRequestType[] = ['자원봉사', '후원협력', '기관협력'];
 
-const TYPE_HINT: Record<ParticipationType, string> = {
-  조합원가입: '가치함께의 조합원으로 함께하고 싶으신 분',
+const TYPE_HINT: Record<ParticipationRequestType, string> = {
   자원봉사: '가치함께의 사업 현장에서 자원봉사를 하고 싶으신 분',
   후원협력: '후원 또는 물품·재능 기부로 함께하고 싶으신 분',
   기관협력: '기관·단체 차원의 협력 사업을 제안하고 싶으신 분',
 };
 
 export const PartnersPage: React.FC = () => {
-  const { partners, submitParticipation, getImageUrl } = useValueTogether();
+  const { partners, submitParticipation, getImageUrl, setActiveTab } = useValueTogether();
   const mountedAt = useRef(Date.now());
 
-  const [type, setType] = useState<ParticipationType>('조합원가입');
+  const [type, setType] = useState<ParticipationRequestType>('자원봉사');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -75,6 +75,11 @@ export const PartnersPage: React.FC = () => {
       <PageBanner eyebrow="PARTNERS" title="협력 및 참여" description="조합원 가입, 자원봉사, 후원·협력, 기관 협력 등 다양한 방법으로 가치함께와 함께하실 수 있습니다." />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-14">
+        <section className="grid md:grid-cols-3 gap-4">
+          <ActionCard icon={Users} title="조합원 가입" text="가치함께의 조합원 유형과 출자금, 권리·의무를 확인하고 가입을 신청하세요." button="조합원 안내·가입" onClick={() => setActiveTab('membership')} />
+          <ActionCard icon={Banknote} title="후원하기" text="일시·정기 후원과 후원계좌, 기부금 관련 안내를 확인하실 수 있습니다." button="후원 안내" onClick={() => setActiveTab('donation')} />
+          <ActionCard icon={Handshake} title="자원봉사·기관협력" text="자원봉사 또는 기관·단체 협력을 제안하고 함께할 수 있습니다." button="참여 신청" onClick={() => document.getElementById('participation-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+        </section>
         {partners.length > 0 && (
           <div className="space-y-5">
             <h2 className="font-bold text-ink text-lg">협력기관 소개</h2>
@@ -101,7 +106,7 @@ export const PartnersPage: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-paper-card border border-line rounded-3xl p-6 sm:p-10 space-y-6">
+        <div id="participation-form" className="bg-paper-card border border-line rounded-3xl p-6 sm:p-10 space-y-6">
           <div className="flex items-center gap-2">
             <HeartHandshake className="w-5 h-5 text-primary-ink" />
             <h2 className="font-bold text-ink text-lg">참여·협력 신청서</h2>
@@ -195,3 +200,5 @@ export const PartnersPage: React.FC = () => {
     </div>
   );
 };
+
+const ActionCard: React.FC<{icon: React.ElementType; title: string; text: string; button: string; onClick: () => void}> = ({icon: Icon, title, text, button, onClick}) => <div className="bg-paper-card border border-line rounded-2xl p-5 flex flex-col"><Icon className="w-5 h-5 text-primary-ink"/><h2 className="font-bold text-ink mt-3">{title}</h2><p className="text-sm text-ink-soft leading-relaxed mt-2 flex-1">{text}</p><button type="button" onClick={onClick} className="mt-4 text-xs font-bold text-primary-ink bg-primary-soft px-3.5 py-2.5 rounded-xl">{button}</button></div>;

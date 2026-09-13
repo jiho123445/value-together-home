@@ -22,13 +22,13 @@ dotenv.config({ path: '.env.local' });
 
 const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || '';
 const DATABASE_ID = process.env.VITE_FIREBASE_DATABASE_ID || '(default)';
-const SITE_ORIGIN = (process.env.SITE_URL || 'https://value-together-home-gray.vercel.app').replace(/\/$/, '');
+const SITE_ORIGIN = (process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://value-together-home-gray.vercel.app').replace(/\/$/, '');
 const SITE_NAME = '사회적협동조합 가치함께';
 const DIST_DIR = path.join(process.cwd(), 'dist');
 
 // App.tsx / ValueTogetherContext.tsx의 parsePath()가 인식하는 상위 경로와
 // 반드시 동일해야 합니다.
-const TOP_LEVEL_ROUTES = ['about', 'business', 'news', 'gallery', 'partners', 'contact', 'privacy', 'terms'];
+const TOP_LEVEL_ROUTES = ['about', 'business', 'news', 'gallery', 'partners', 'membership', 'donation', 'governance', 'social-value', 'contact', 'privacy', 'terms'];
 
 function unwrapFirestoreValue(value) {
   if (value == null) return null;
@@ -65,7 +65,7 @@ function buildPreviewHtml(shellHtml, opts) {
   const { title, description, image, canonicalPath } = opts;
   const fullTitle = `${title} | ${SITE_NAME}`;
   const canonicalUrl = `${SITE_ORIGIN}${canonicalPath}`;
-  const ogImage = image || `${SITE_ORIGIN}/og-image.png`;
+  const ogImage = image || `${SITE_ORIGIN}/og-image.jpg`;
 
   let html = shellHtml;
   html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(fullTitle)}</title>`);
@@ -115,12 +115,28 @@ async function main() {
     return;
   }
 
-  // 앱이 인식하는 모든 상위 경로는 항상 실제 파일을 갖도록 합니다(호스팅
-  // rewrite 설정과 무관하게 새로고침/직접 접근이 항상 동작하도록).
+  // 앱이 인식하는 모든 상위 경로는 실제 index.html을 갖도록 하고,
+  // 검색/공유 봇이 JS를 실행하지 않아도 페이지별 기본 제목·설명·canonical을
+  // 읽을 수 있도록 정적 메타데이터를 주입합니다.
+  const ROUTE_META = {
+    about: { title: '가치함께 | 사회적협동조합 가치함께', description: '사회적협동조합 가치함께의 설립 목적, 핵심가치, 연혁, 조직을 소개합니다.' },
+    business: { title: '주요사업 | 사회적협동조합 가치함께', description: '정관에서 정한 주사업과 기타사업 등 가치함께의 주요 사업을 안내합니다.' },
+    news: { title: '소식 | 사회적협동조합 가치함께', description: '가치함께의 공지사항, 사업소식, 모집공고, 보도자료를 확인할 수 있습니다.' },
+    gallery: { title: '활동갤러리 | 사회적협동조합 가치함께', description: '가치함께의 교육·복지·지역사회 활동 현장을 사진으로 소개합니다.' },
+    partners: { title: '조합원·참여 | 사회적협동조합 가치함께', description: '조합원 가입, 자원봉사, 후원 및 기관협력 등 함께하는 방법을 안내합니다.' },
+    membership: { title: '조합원 가입 | 사회적협동조합 가치함께', description: '조합원 유형, 출자금, 권리와 가입 절차를 안내합니다.' },
+    donation: { title: '후원하기 | 사회적협동조합 가치함께', description: '가치함께의 후원 방법과 후원계좌, 기부금 관련 안내를 제공합니다.' },
+    governance: { title: '투명경영·경영공시 | 사회적협동조합 가치함께', description: '정관·규정, 총회·이사회, 사업계획·결산 등 공개자료를 제공합니다.' },
+    'social-value': { title: '사회적 가치 | 사회적협동조합 가치함께', description: '사업을 통해 지역사회에 만들어가는 사회적 가치와 성과를 공개합니다.' },
+    contact: { title: '오시는 길·문의 | 사회적협동조합 가치함께', description: '가치함께의 위치와 연락처, 문의 방법을 안내합니다.' },
+    privacy: { title: '개인정보처리방침 | 가치함께', description: '사회적협동조합 가치함께 개인정보처리방침입니다.' },
+    terms: { title: '이용약관 | 가치함께', description: '사회적협동조합 가치함께 홈페이지 이용약관입니다.' },
+  };
   for (const route of TOP_LEVEL_ROUTES) {
     const dir = path.join(DIST_DIR, route);
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, 'index.html'), shellHtml, 'utf-8');
+    const meta = ROUTE_META[route] || { title: SITE_NAME, description: '사회적협동조합 가치함께 홈페이지' };
+    fs.writeFileSync(path.join(dir, 'index.html'), buildPreviewHtml(shellHtml, { title: meta.title, description: meta.description, canonicalPath: `/${route}` }), 'utf-8');
   }
 
   if (!PROJECT_ID) {
@@ -162,7 +178,9 @@ async function main() {
       image: imageAttachment?.url,
       canonicalPath: `/news/${encodeURIComponent(notice.id)}`,
     });
-    fs.writeFileSync(path.join(newsDir, `${notice.id}.html`), html, 'utf-8');
+    const detailDir = path.join(newsDir, encodeURIComponent(String(notice.id)));
+    fs.mkdirSync(detailDir, { recursive: true });
+    fs.writeFileSync(path.join(detailDir, 'index.html'), html, 'utf-8');
     count++;
   }
   for (const program of programs) {
@@ -174,7 +192,9 @@ async function main() {
       image: program.imageUrl,
       canonicalPath: `/business/${encodeURIComponent(program.id)}`,
     });
-    fs.writeFileSync(path.join(businessDir, `${program.id}.html`), html, 'utf-8');
+    const detailDir = path.join(businessDir, encodeURIComponent(String(program.id)));
+    fs.mkdirSync(detailDir, { recursive: true });
+    fs.writeFileSync(path.join(detailDir, 'index.html'), html, 'utf-8');
     count++;
   }
   for (const item of gallery) {
@@ -186,7 +206,9 @@ async function main() {
       image: item.imageUrl,
       canonicalPath: `/gallery/${encodeURIComponent(item.id)}`,
     });
-    fs.writeFileSync(path.join(galleryDir, `${item.id}.html`), html, 'utf-8');
+    const detailDir = path.join(galleryDir, encodeURIComponent(String(item.id)));
+    fs.mkdirSync(detailDir, { recursive: true });
+    fs.writeFileSync(path.join(detailDir, 'index.html'), html, 'utf-8');
     count++;
   }
 

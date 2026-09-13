@@ -3,7 +3,7 @@ import { useValueTogether } from '../../context/ValueTogetherContext';
 
 // 커스텀 도메인을 새로 연결하면 index.html 및
 // scripts/generate-previews.mjs의 SITE_ORIGIN과 함께 반드시 업데이트하세요.
-const SITE = 'https://value-together-home-gray.vercel.app';
+const SITE = (import.meta.env.VITE_SITE_URL || 'https://value-together-home-gray.vercel.app').replace(/\/$/, '');
 const SITE_NAME = '사회적협동조합 가치함께';
 
 const pageMeta: Record<string, { title: string; description: string }> = {
@@ -17,7 +17,7 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   },
   business: {
     title: '주요사업 | 사회적협동조합 가치함께',
-    description: '사회서비스, 교육, 지역사회, 돌봄·복지, 일자리·자립지원 등 가치함께의 주요 사업을 안내합니다.',
+    description: '정관에서 정한 장애인 활동 지원 인재 양성, 노인 관련 민간 자격증 발급, 주민 역량 강화 및 교육 등 가치함께의 주요 사업을 안내합니다.',
   },
   news: {
     title: '소식 | 사회적협동조합 가치함께',
@@ -31,10 +31,11 @@ const pageMeta: Record<string, { title: string; description: string }> = {
     title: '협력 및 참여 | 사회적협동조합 가치함께',
     description: '조합원 가입, 자원봉사, 후원·협력, 기관 협력 등 가치함께와 함께하는 방법을 안내합니다.',
   },
-  contact: {
-    title: '오시는 길·문의 | 사회적협동조합 가치함께',
-    description: '가치함께의 위치, 연락처와 운영시간을 안내하고 문의를 남기실 수 있습니다.',
-  },
+  contact: { title: '오시는 길·문의 | 사회적협동조합 가치함께', description: '가치함께의 위치, 연락처와 운영시간을 안내하고 문의를 남기실 수 있습니다.' },
+  membership: { title: '조합원 가입 | 사회적협동조합 가치함께', description: '가치함께의 조합원 유형, 출자금, 권리와 가입절차를 안내합니다.' },
+  donation: { title: '후원하기 | 사회적협동조합 가치함께', description: '사회적협동조합 가치함께의 후원 방법과 후원계좌, 기부금 안내입니다.' },
+  governance: { title: '투명경영·경영공시 | 사회적협동조합 가치함께', description: '가치함께의 정관·규정, 총회·이사회, 사업계획과 결산 등 공개자료를 안내합니다.' },
+  'social-value': { title: '사회적 가치 | 사회적협동조합 가치함께', description: '가치함께가 사업을 통해 지역사회에 만들어가는 사회적 가치와 성과를 공개합니다.' },
   privacy: { title: '개인정보처리방침 | 가치함께', description: '사회적협동조합 가치함께 개인정보처리방침입니다.' },
   terms: { title: '이용약관 | 가치함께', description: '사회적협동조합 가치함께 홈페이지 이용약관입니다.' },
   'not-found': {
@@ -72,7 +73,7 @@ export const SEOHead: React.FC = () => {
     const meta = pageMeta[activeTab] || pageMeta.main;
     let title = meta.title;
     let description = meta.description;
-    let image = `${SITE}/og-image.png`;
+    let image = `${SITE}/og-image.jpg`;
 
     if (detail) {
       const item: any = selectedNotice || selectedProgram || selectedGallery;
@@ -98,7 +99,13 @@ export const SEOHead: React.FC = () => {
     upsertMeta('og:title', title, true);
     upsertMeta('og:description', description, true);
     upsertMeta('og:url', canonical, true);
+    image = /^https?:\/\//.test(image) ? image : `${SITE}${image.startsWith('/') ? image : `/${image}`}`;
     upsertMeta('og:image', image, true);
+    upsertMeta('og:image:secure_url', image, true);
+    upsertMeta('og:image:type', 'image/jpeg', true);
+    upsertMeta('og:image:width', '1200', true);
+    upsertMeta('og:image:height', '630', true);
+    upsertMeta('og:image:alt', SITE_NAME, true);
     upsertMeta('og:site_name', SITE_NAME, true);
     upsertMeta('twitter:title', title);
     upsertMeta('twitter:description', description);

@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
             <p className="text-white font-bold text-base sm:text-lg mb-1.5">단체 정보</p>
             <p>{settings.name}</p>
             {settings.representativeName && <p>대표: {settings.representativeName}</p>}
-            {settings.businessRegistrationNumber && <p>사업자등록번호: {settings.businessRegistrationNumber}</p>}
+            {settings.businessRegistrationNumber && <p>고유번호: {settings.businessRegistrationNumber}</p>}
             {!isPlaceholderAddress(settings.address) && <p>{settings.address}</p>}
           </div>
 

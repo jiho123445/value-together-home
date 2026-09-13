@@ -5,11 +5,12 @@ import { ActiveTab } from '../../types';
 import { Menu, X, ChevronRight } from 'lucide-react';
 
 const NAV_ITEMS: { tab: ActiveTab; label: string }[] = [
-  { tab: 'about', label: '가치함께 소개' },
+  { tab: 'about', label: '가치함께' },
   { tab: 'business', label: '주요사업' },
   { tab: 'news', label: '소식' },
-  { tab: 'gallery', label: '활동갤러리' },
-  { tab: 'partners', label: '협력 및 참여' },
+  { tab: 'partners', label: '조합원·참여' },
+  { tab: 'governance', label: '투명경영' },
+  { tab: 'social-value', label: '사회적 가치' },
   { tab: 'contact', label: '오시는 길·문의' },
 ];
 

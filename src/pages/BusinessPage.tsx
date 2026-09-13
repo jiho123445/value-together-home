@@ -4,14 +4,14 @@ import { PageBanner } from '../components/common/PageBanner';
 import { ProgramCategory } from '../types';
 import { getProgramPhoto } from '../utils/programPhoto';
 
-const CATEGORIES: (ProgramCategory | '전체')[] = ['전체', '사회서비스', '교육사업', '지역사회사업', '돌봄복지사업', '일자리자립지원', '기타사업'];
+const CATEGORIES: ('전체' | '주사업' | '기타사업')[] = ['전체', '주사업', '기타사업'];
 
 export const BusinessPage: React.FC = () => {
   const { programs, viewProgramDetail, getImageUrl } = useValueTogether();
-  const [category, setCategory] = useState<(ProgramCategory | '전체')>('전체');
+  const [category, setCategory] = useState<'전체' | '주사업' | '기타사업'>('전체');
 
   const filtered = useMemo(() => {
-    const list = category === '전체' ? programs : programs.filter((p) => p.category === category);
+    const list = category === '전체' ? programs : programs.filter((p) => (p.businessType || '기타사업') === category);
     return [...list].sort((a, b) => a.order - b.order);
   }, [programs, category]);
 
@@ -60,7 +60,7 @@ export const BusinessPage: React.FC = () => {
                     </div>
                     <span className="text-xs sm:text-sm font-black text-ink-soft/60 font-mono tracking-wider">사업 {program.code}</span>
                   </div>
-                  <span className="inline-block text-[11px] font-bold text-secondary-ink bg-secondary-soft px-2.5 py-1 rounded-full">{program.category}</span>
+                  <span className="inline-block text-[11px] font-bold text-secondary-ink bg-secondary-soft px-2.5 py-1 rounded-full">{program.businessType || '기타사업'} · {program.category}</span>
                   <h3 className="font-bold text-ink text-base leading-snug">{program.title}</h3>
                   <p className="text-xs sm:text-sm font-bold text-ink/90 leading-relaxed line-clamp-2">{program.summary}</p>
                 </button>

@@ -42,6 +42,39 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+
+    // 조합원 가입 신청. 개인정보 포함 — 방문자는 생성만 가능.
+    match /memberApplications/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['memberType','name','phone','email','organization','desiredShareCount','privacyAgreed','createdAt','status'])
+        && request.resource.data.keys().hasAll(['memberType','name','phone','desiredShareCount','privacyAgreed','createdAt','status'])
+        && request.resource.data.memberType in ['생산자조합원','소비자조합원','직원조합원','자원봉사자조합원','후원자조합원']
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 200
+        && request.resource.data.phone is string && request.resource.data.phone.size() > 0 && request.resource.data.phone.size() < 50
+        && (!request.resource.data.keys().hasAny(['email']) || (request.resource.data.email is string && request.resource.data.email.size() < 200))
+        && (!request.resource.data.keys().hasAny(['organization']) || (request.resource.data.organization is string && request.resource.data.organization.size() < 200))
+        && request.resource.data.desiredShareCount is int && request.resource.data.desiredShareCount >= 1 && request.resource.data.desiredShareCount <= 100
+        && request.resource.data.privacyAgreed == true
+        && request.resource.data.createdAt is string
+        && request.resource.data.status == '신청접수';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // 후원 의향/영수증 안내 요청. 실제 입금·세무 처리는 조합의 별도 회계 절차로 진행.
+    match /donationInquiries/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['donorName','phone','email','amount','purpose','receiptRequested','privacyAgreed','createdAt','status'])
+        && request.resource.data.keys().hasAll(['donorName','phone','amount','receiptRequested','privacyAgreed','createdAt','status'])
+        && request.resource.data.donorName is string && request.resource.data.donorName.size() > 0 && request.resource.data.donorName.size() < 200
+        && request.resource.data.phone is string && request.resource.data.phone.size() > 0 && request.resource.data.phone.size() < 50
+        && (!request.resource.data.keys().hasAny(['email']) || (request.resource.data.email is string && request.resource.data.email.size() < 200))
+        && request.resource.data.amount is int && request.resource.data.amount >= 1000 && request.resource.data.amount <= 1000000000
+        && (!request.resource.data.keys().hasAny(['purpose']) || (request.resource.data.purpose is string && request.resource.data.purpose.size() < 500))
+        && request.resource.data.receiptRequested is bool
+        && request.resource.data.privacyAgreed == true
+        && request.resource.data.createdAt is string
+        && request.resource.data.status == '접수완료';
+      allow read, update, delete: if isAdmin();
+    }
+
     // 문의하기(일반/사업/협력). 참여신청과 동일한 패턴.
     match /inquiries/{id} {
       allow create: if request.resource.data.keys().hasOnly(['type', 'name', 'phone', 'email', 'subject', 'message', 'privacyAgreed', 'createdAt', 'status'])

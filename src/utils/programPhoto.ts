@@ -24,6 +24,13 @@ const DEFAULT_PROGRAM_PHOTOS: Record<string, string> = {
   '돌봄복지사업': '/images/programs/program-care-welfare.jpg',
   '일자리자립지원': '/images/programs/program-job-support.jpg',
   '기타사업': '/images/programs/program-etc.jpg',
+  '장애인 활동 지원 인재 양성': '/images/programs/program-care-welfare.jpg',
+  '노인 관련 민간 자격증 발급': '/images/programs/program-education.jpg',
+  '주민 역량 강화 및 교육': '/images/programs/program-community.jpg',
+  '사회복지 위탁사업': '/images/programs/program-care-welfare.jpg',
+  '조합원·직원 교육': '/images/programs/program-education.jpg',
+  '조합 간 협력': '/images/programs/program-community.jpg',
+  '홍보·지역사회사업': '/images/programs/program-community.jpg',
 };
 
 export function getProgramPhoto(

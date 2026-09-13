@@ -5,13 +5,13 @@ import { ProgramCategory, ProgramItem } from '../../types';
 import { Plus, Trash2, Pencil, X, Save } from 'lucide-react';
 import { getProgramPhoto } from '../../utils/programPhoto';
 
-const CATEGORIES: ProgramCategory[] = ['사회서비스', '교육사업', '지역사회사업', '돌봄복지사업', '일자리자립지원', '기타사업'];
+const CATEGORIES: ProgramCategory[] = ['장애인 활동 지원 인재 양성', '노인 관련 민간 자격증 발급', '주민 역량 강화 및 교육', '사회복지 위탁사업', '조합원·직원 교육', '조합 간 협력', '홍보·지역사회사업', '기타사업'];
 const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-line bg-paper text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
 
 type DraftProgram = Omit<ProgramItem, 'id' | 'code'>;
 
 const emptyDraft = (order: number): DraftProgram => ({
-  category: '사회서비스', title: '', subtitle: '', summary: '', details: [''], targetAudience: '', impactMessage: '',
+  category: '주민 역량 강화 및 교육', businessType: '주사업', title: '', subtitle: '', summary: '', details: [''], targetAudience: '', impactMessage: '',
   iconName: 'HeartHandshake', imageUrl: undefined, featuredOnHome: false, order,
 });
 
@@ -59,6 +59,13 @@ export const ProgramsTab: React.FC = () => {
               <label className="text-xs font-bold text-ink">카테고리</label>
               <select className={inputCls} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value as ProgramCategory })}>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-ink">정관상 사업 구분</label>
+              <select className={inputCls} value={draft.businessType || '주사업'} onChange={(e) => setDraft({ ...draft, businessType: e.target.value as '주사업' | '기타사업' })}>
+                <option value="주사업">주사업</option>
+                <option value="기타사업">기타사업</option>
               </select>
             </div>
             <div className="space-y-1.5">
