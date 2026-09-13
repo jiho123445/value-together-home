@@ -42,16 +42,14 @@ export const CoreValuesSection: React.FC = () => {
             return (
               <div key={value.id} className="flex flex-col items-center text-center gap-4">
                 <div
-                  className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-none overflow-hidden shrink-0 bg-paper-soft"
-                  style={{ borderRadius: 0 }}
+                  className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-3xl overflow-hidden shrink-0 bg-paper-soft"
                 >
                   <img
                     src={getImageUrl(imgSrc)}
                     alt={value.title}
                     referrerPolicy="no-referrer"
                     loading="lazy"
-                    className="block w-full h-full object-cover scale-110"
-                    style={{ borderRadius: 0 }}
+                    className="block w-full h-full object-cover scale-[1.25]"
                   />
                 </div>
                 <div className="min-w-0 space-y-1.5">
