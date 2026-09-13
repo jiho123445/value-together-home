@@ -35,29 +35,34 @@ export const NewsPage: React.FC = () => {
       <PageBanner eyebrow="NEWS" title="소식" description="공지사항, 사업소식, 모집공고, 보도자료, 자료실을 확인하실 수 있습니다." />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-6">
-        <div className="overflow-x-auto pb-1">
-          <div className="grid grid-cols-[repeat(6,minmax(120px,1fr))_minmax(220px,1.35fr)] gap-3 min-w-[1120px] items-center">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setNoticeCategory(c)}
-                className={`w-full min-h-12 px-3 rounded-full text-sm sm:text-base font-bold border transition-colors whitespace-nowrap ${
-                  noticeCategory === c ? 'bg-primary text-primary-ink border-primary' : 'bg-paper-card border-line text-ink-soft hover:text-ink'
-                }`}
-              >
-                {c}
-              </button>
-            ))}
+        <div className="space-y-8">
+          {/* 카테고리는 화면 폭을 끝까지 활용해 동일한 폭으로 균등 배치합니다. */}
+          <div className="overflow-x-auto pb-1">
+            <div className="grid grid-cols-6 gap-3 sm:gap-4 min-w-[720px] w-full">
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setNoticeCategory(c)}
+                  className={`w-full min-h-12 px-3 rounded-full text-sm sm:text-base font-bold border transition-colors whitespace-nowrap ${
+                    noticeCategory === c ? 'bg-primary text-primary-ink border-primary' : 'bg-paper-card border-line text-ink-soft hover:text-ink'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* 검색창은 카테고리와 게시글 영역 사이에 충분한 여백을 두어 배치합니다. */}
           <div className="relative w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/50" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 absolute left-4 top-1/2 -translate-y-1/2 text-ink-soft/50" />
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="제목/내용 검색"
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-line bg-paper-card text-sm focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-line bg-paper-card text-sm sm:text-base focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
             />
           </div>
         </div>
