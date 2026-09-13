@@ -77,15 +77,24 @@ export const AdminShell: React.FC = () => {
           {NAV.map((item) => (
             <SidebarButton key={item.key} item={item} active={tab === item.key} onClick={() => goToTab(item.key)} />
           ))}
+
+          {/* 관리자 메뉴 바로 아래에 주요 이동/종료 기능을 배치해 긴 페이지의 맨 아래까지
+              스크롤하지 않아도 사이트로 돌아가거나 로그아웃할 수 있도록 합니다. */}
+          <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+            <button
+              onClick={() => setAdminOpen(false)}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-bold text-white/85 bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" /> 사이트로 돌아가기
+            </button>
+            <button
+              onClick={() => logoutAdmin()}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-bold text-white/70 hover:bg-white/10 transition-colors"
+            >
+              <LogOut className="w-4 h-4" /> 로그아웃
+            </button>
+          </div>
         </nav>
-        <div className="p-3 border-t border-white/10 space-y-1">
-          <button onClick={() => setAdminOpen(false)} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
-            <ExternalLink className="w-4 h-4" /> 사이트로 돌아가기
-          </button>
-          <button onClick={() => logoutAdmin()} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
-            <LogOut className="w-4 h-4" /> 로그아웃
-          </button>
-        </div>
       </aside>
 
       {/* Mobile top bar + drawer */}
@@ -101,15 +110,22 @@ export const AdminShell: React.FC = () => {
             {NAV.map((item) => (
               <SidebarButton key={item.key} item={item} active={tab === item.key} onClick={() => goToTab(item.key)} />
             ))}
+
+            <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+              <button
+                onClick={() => setAdminOpen(false)}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-bold text-white/85 bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" /> 사이트로 돌아가기
+              </button>
+              <button
+                onClick={() => logoutAdmin()}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-bold text-white/70 hover:bg-white/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" /> 로그아웃
+              </button>
+            </div>
           </nav>
-          <div className="p-3 border-t border-white/10 space-y-1">
-            <button onClick={() => setAdminOpen(false)} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
-              <ExternalLink className="w-4 h-4" /> 사이트로 돌아가기
-            </button>
-            <button onClick={() => logoutAdmin()} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/70 hover:bg-white/10">
-              <LogOut className="w-4 h-4" /> 로그아웃
-            </button>
-          </div>
         </div>
       )}
 

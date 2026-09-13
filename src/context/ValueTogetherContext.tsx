@@ -785,10 +785,15 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   // Promise<boolean>을 반환합니다 — TimelineEditor의 행별 저장 버튼이 실제
   // 저장 성공/실패를 표시할 수 있도록 합니다.
-  const updateTimelineItem = (id: string, updated: Partial<TimelineItem>): Promise<boolean> => {
-    const next = timelineRef.current.map((t) => (t.id === id ? { ...t, ...updated } : t));
-    applyTimeline(next);
-    return postMutation('timeline', { items: next }, `연혁 수정 (ID: ${id})`);
+  const updateTimelineItem = async (id: string, updated: Partial<TimelineItem>): Promise<boolean> => {
+    const previous = timelineRef.current;
+    const next = previous.map((t) => (t.id === id ? { ...t, ...updated } : t));
+    const ok = await postMutation('timeline', { items: next }, `연혁 수정 (ID: ${id})`, { items: previous });
+    // Firestore 저장에 성공한 경우에만 공개 상태를 변경합니다. 실패하면
+    // 관리자 화면에서도 원래 값으로 유지되어, 저장되지 않은 내용이
+    // 홈페이지에 반영된 것처럼 보이는 일을 막습니다.
+    if (ok) applyTimeline(next);
+    return ok;
   };
   const deleteTimelineItem = (id: string) => {
     const next = timelineRef.current.filter((t) => t.id !== id);

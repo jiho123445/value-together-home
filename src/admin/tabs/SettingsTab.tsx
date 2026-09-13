@@ -383,20 +383,26 @@ const TimelineRow: React.FC<{
           onClick={handleSave}
           disabled={!isDirty || status === 'saving'}
           title={isDirty ? '변경 사항 저장' : '변경 사항 없음'}
-          className="p-2.5 text-primary-ink hover:bg-primary-soft rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
+          className="inline-flex items-center justify-center gap-1.5 min-w-[68px] px-3 py-2.5 text-xs font-bold text-primary-ink bg-primary-soft rounded-lg hover:opacity-80 disabled:opacity-35 disabled:hover:opacity-35"
         >
-          {status === 'saving' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {status === 'saving' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+          {status === 'saving' ? '저장 중' : '저장'}
         </button>
-        <button type="button" onClick={() => onDelete(item.id)} className="p-2.5 text-ink-soft hover:text-red-600 rounded-lg hover:bg-red-50">
-          <Trash2 className="w-4 h-4" />
+        <button
+          type="button"
+          onClick={() => onDelete(item.id)}
+          title="연혁 삭제"
+          className="inline-flex items-center justify-center gap-1.5 min-w-[68px] px-3 py-2.5 text-xs font-bold text-ink-soft hover:text-red-600 rounded-lg hover:bg-red-50"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          삭제
         </button>
       </div>
-      {status === 'saved' && (
-        <p className="pl-1 inline-flex items-center gap-1 text-[11px] font-bold text-secondary-ink"><CheckCircle2 className="w-3 h-3" /> 저장됨</p>
-      )}
-      {status === 'error' && (
-        <p className="pl-1 inline-flex items-center gap-1 text-[11px] font-bold text-red-600"><AlertCircle className="w-3 h-3" /> 저장 실패 — 다시 시도해 주세요.</p>
-      )}
+      <div className="min-h-[18px] px-1 text-[11px] font-semibold" aria-live="polite">
+        {status === 'saved' && <span className="text-secondary-ink inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> 홈페이지 반영 완료</span>}
+        {status === 'error' && <span className="text-red-600 inline-flex items-center gap-1"><AlertCircle className="w-3 h-3" /> 저장 실패 — 다시 시도해 주세요.</span>}
+        {status === 'idle' && isDirty && <span className="text-ink-soft">변경 사항이 있습니다. <strong>저장</strong> 버튼을 눌러 홈페이지에 반영하세요.</span>}
+      </div>
     </div>
   );
 };
