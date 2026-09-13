@@ -41,7 +41,7 @@ export const CoreValuesSection: React.FC = () => {
             const imgSrc = getCoreValueImage(value);
             return (
               <div key={value.id} className="flex flex-col items-center text-center gap-4">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-3xl overflow-hidden shrink-0 border border-line bg-paper-soft shadow-sm">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-none overflow-hidden shrink-0 border border-line bg-paper-soft shadow-sm">
                   <img
                     src={getImageUrl(imgSrc)}
                     alt={value.title}
