@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
@@ -82,7 +82,17 @@ if (recaptchaSiteKey) {
   );
 }
 
-export const db = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
+// Firestore WebChannel can hang behind some proxies, antivirus products, or
+// restrictive networks. Long polling is slightly less efficient, but is much
+// more tolerant of those environments and prevents admin saves from sitting
+// indefinitely waiting for the Firestore backend connection.
+const firestoreSettings = {
+  experimentalForceLongPolling: true,
+};
+
+export const db = databaseId
+  ? initializeFirestore(app, firestoreSettings, databaseId)
+  : initializeFirestore(app, firestoreSettings);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 

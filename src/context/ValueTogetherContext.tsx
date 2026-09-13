@@ -582,8 +582,8 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       },
       (error) => {
         handleFirestoreError(error, OperationType.GET, 'content');
-        setSyncStatus('success');
-        setSyncError(null);
+        setSyncStatus('error');
+        setSyncError(`Firestore 연결에 실패했습니다. ${error instanceof Error ? error.message : String(error)}`);
         addDebugLog('warn', 'Firestore 실시간 동기화 연결 실패 — 저장된 콘텐츠로 표시합니다.', error instanceof Error ? error.message : String(error));
       }
     );
@@ -675,8 +675,9 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
       setSyncError(null);
     } catch (err) {
       console.warn('Sync notice:', err);
-      setSyncStatus('success');
-      setSyncError(null);
+      setSyncStatus('error');
+      setSyncError(`Firestore 새로고침에 실패했습니다. ${err instanceof Error ? err.message : String(err)}`);
+      addDebugLog('warn', 'Firestore 최신 데이터 새로고침 실패', err instanceof Error ? err.message : String(err));
     } finally {
       setIsSyncing(false);
     }
@@ -722,6 +723,8 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   // rejection)" 경고를 일으키지 않게 하기 위함이며, 저장 결과를 실제로
   // 화면에 반영해야 하는 호출부(예: 설정 화면의 저장 버튼)는 이 boolean을
   // await해서 사용할 수 있습니다.
+  const FIRESTORE_WRITE_TIMEOUT_MS = 12000;
+
   const postMutation = useCallback((docName: string, payload: any, actionName: string, previousPayload?: unknown): Promise<boolean> => {
     const targetDocRef = doc(db, 'content', docName);
     const update: any = sanitizeForFirestore({ ...payload, updatedAt: new Date().toISOString() });
@@ -737,7 +740,14 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
-      return setDoc(targetDocRef, update, { merge: true })
+      const writePromise = setDoc(targetDocRef, update, { merge: true });
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        window.setTimeout(() => {
+          reject(new Error(`Firestore 저장 요청이 ${FIRESTORE_WRITE_TIMEOUT_MS / 1000}초 동안 응답하지 않았습니다.`));
+        }, FIRESTORE_WRITE_TIMEOUT_MS);
+      });
+
+      return Promise.race([writePromise, timeoutPromise])
         .then(() => {
           addDebugLog('success', `[저장 완료] ${actionName}`);
           setSyncTimestamp(Date.now());
@@ -1038,8 +1048,10 @@ export const ValueTogetherProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateSettings = (newSettings: Partial<OrgSettings>): Promise<boolean> => {
     const previous = settings;
     const next = { ...settings, ...newSettings };
-    setSettings(next);
-    return postMutation('settings', next, '기본정보 수정', previous);
+    return postMutation('settings', next, '기본정보 수정', previous).then((ok) => {
+      if (ok) setSettings(next);
+      return ok;
+    });
   };
 
   const resetToDefaults = () => {
