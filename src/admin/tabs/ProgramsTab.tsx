@@ -29,8 +29,8 @@ export const ProgramsTab: React.FC = () => {
   const save = () => {
     if (!draft || !draft.title.trim()) return;
     const cleanDetails = draft.details.map((d) => d.trim()).filter(Boolean);
-    const businessType = PRIMARY_CATEGORIES.includes(draft.category) ? '주사업' : '기타사업';
-    const payload = { ...draft, businessType, details: cleanDetails.length > 0 ? cleanDetails : ['-'] };
+    const businessType: ProgramItem['businessType'] = PRIMARY_CATEGORIES.includes(draft.category) ? '주사업' : '기타사업';
+    const payload: DraftProgram = { ...draft, businessType, details: cleanDetails.length > 0 ? cleanDetails : ['-'] };
     if (editingId && editingId !== 'new') updateProgram(editingId, payload);
     else addProgram(payload);
     cancel();
