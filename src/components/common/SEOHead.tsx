@@ -9,7 +9,7 @@ const SITE_NAME = '사회적협동조합 가치함께';
 const pageMeta: Record<string, { title: string; description: string }> = {
   main: {
     title: '사회적협동조합 가치함께',
-    description: '사람과 지역사회를 연결하고, 함께 성장할 수 있는 사회적 가치를 만들어가는 사회적협동조합입니다.',
+    description: '사람과 지역을 함께 성장시키는 사회적협동조합 가치함께. 사회서비스, 교육, 돌봄·복지, 일자리·자립지원 사업을 운영합니다.',
   },
   about: {
     title: '가치함께 소개 | 사회적협동조합 가치함께',
