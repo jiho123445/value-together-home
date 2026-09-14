@@ -34,7 +34,8 @@ if (/match\s+\/\{document=\*\*\}/.test(rules) && /allow\s+read,\s*write:\s*if\s+
 if (/match\s+\/\{allPaths=\*\*\}/.test(storage) && /allow\s+read,\s*write:\s*if\s+false/.test(storage)) pass('Storage deny-by-default wildcard present'); else fail('Storage deny-by-default wildcard missing');
 if (/participations|inquiries/.test(rules) && /allow\s+read,\s*update,\s*delete:\s*if\s+isAdmin/.test(rules)) pass('Personal-data collections admin-only read/update/delete'); else fail('Personal-data collection rules incomplete');
 
-const csp = vercel.headers?.[0]?.headers?.find((x) => x.key === 'Content-Security-Policy')?.value || '';
+const allHeaders = Array.isArray(vercel.headers) ? vercel.headers.flatMap((entry) => entry?.headers || []) : [];
+const csp = allHeaders.find((x) => x.key?.toLowerCase() === 'content-security-policy')?.value || '';
 for (const token of ['https://securetoken.googleapis.com', 'https://identitytoolkit.googleapis.com', 'https://firebaseinstallations.googleapis.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com']) {
   csp.includes(token) ? pass(`CSP allows ${token}`) : fail(`CSP missing ${token}`);
 }
