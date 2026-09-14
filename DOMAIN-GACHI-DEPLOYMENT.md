@@ -1,24 +1,24 @@
-# gachi.or.kr 실도메인 배포 체크리스트
+# gachi.or.kr 실도메인 배포 체크리스트 (www 대표 도메인)
 
 ## 소스 반영
-- `index.html`의 canonical / Open Graph / JSON-LD 기본 URL: `https://gachi.or.kr`
-- `src/components/common/SEOHead.tsx`의 기본 SITE: `https://gachi.or.kr`
-- `scripts/generate-previews.mjs`의 SITE_ORIGIN 기본값: `https://gachi.or.kr`
-- `public/robots.txt`의 Sitemap: `https://gachi.or.kr/sitemap.xml`
+- `index.html`의 canonical / Open Graph / JSON-LD 기본 URL: `https://www.gachi.or.kr`
+- `src/components/common/SEOHead.tsx`의 기본 SITE: `https://www.gachi.or.kr`
+- `scripts/generate-previews.mjs`의 SITE_ORIGIN 기본값: `https://www.gachi.or.kr`
+- `public/robots.txt`의 Sitemap: `https://www.gachi.or.kr/sitemap.xml`
 
 ## Vercel
 1. GitHub 저장소에 이 버전을 배포합니다.
-2. Vercel 프로젝트 → Settings → Domains → `gachi.or.kr` 추가.
+2. Vercel 프로젝트 → Settings → Domains → `gachi.or.kr`과 `www.gachi.or.kr`을 모두 연결하고, Vercel의 현재 Production 주 도메인인 `www.gachi.or.kr`을 대표 주소로 사용.
 3. 도메인 등록기관 DNS에서 Vercel이 안내하는 값을 정확히 설정합니다.
 4. Vercel에서 `gachi.or.kr`의 SSL 인증서가 Ready인지 확인합니다.
-5. Vercel의 기존 Firebase 환경변수는 유지합니다. Production sitemap/canonical 생성 주소는 소스에서 `https://gachi.or.kr`로 고정되어 있어 과거 Vercel 주소가 유입되지 않습니다. `VITE_SITE_URL`/`SITE_URL`을 별도로 설정하더라도 production sitemap의 origin은 변경되지 않습니다.
-6. Firebase Authentication → Settings → Authorized domains에 `gachi.or.kr`을 추가합니다. (관리자 로그인 등 Firebase Auth를 사용하는 경우 필수)
-7. Firebase App Check를 사용하는 경우 reCAPTCHA 설정에서도 실제 도메인 `gachi.or.kr`을 허용합니다.
+5. Vercel의 기존 Firebase 환경변수는 유지합니다. Production sitemap/canonical 생성 주소는 소스에서 `https://www.gachi.or.kr`로 고정되어 있어 과거 Vercel 주소가 유입되지 않습니다. `VITE_SITE_URL`/`SITE_URL`을 별도로 설정하더라도 production sitemap의 origin은 변경되지 않습니다.
+6. Firebase Authentication → Settings → Authorized domains에 `gachi.or.kr`과 `www.gachi.or.kr`을 추가합니다. (관리자 로그인 등 Firebase Auth를 사용하는 경우 필수)
+7. Firebase App Check를 사용하는 경우 reCAPTCHA 설정에서도 실제 도메인 `gachi.or.kr`과 `www.gachi.or.kr`을 허용합니다.
 
 ## 배포 후 확인
-- `https://gachi.or.kr/`
-- `https://gachi.or.kr/robots.txt`
-- `https://gachi.or.kr/sitemap.xml`
+- `https://www.gachi.or.kr/`
+- `https://www.gachi.or.kr/robots.txt`
+- `https://www.gachi.or.kr/sitemap.xml`
 - 카카오톡 링크 공유 시 OG 이미지/제목이 `gachi.or.kr` 기준으로 표시되는지 확인
 - 관리자 로그인 및 사진 업로드 확인
 

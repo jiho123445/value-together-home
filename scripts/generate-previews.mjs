@@ -26,7 +26,7 @@ const DATABASE_ID = process.env.VITE_FIREBASE_DATABASE_ID || '(default)';
 // environment variable can never leak the old *.vercel.app host into sitemap.xml
 // or static preview canonical/OG URLs. If a staging build is needed, clone this
 // script/config rather than overriding the production sitemap origin.
-const SITE_ORIGIN = 'https://gachi.or.kr';
+const SITE_ORIGIN = 'https://www.gachi.or.kr';
 const SITE_NAME = '사회적협동조합 가치함께';
 const DIST_DIR = path.join(process.cwd(), 'dist');
 

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gachi.or.kr/sitemap.xml
+Sitemap: https://www.gachi.or.kr/sitemap.xml

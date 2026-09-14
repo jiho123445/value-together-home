@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useValueTogether } from '../../context/ValueTogetherContext';
 
 // Production canonical origin. VITE_SITE_URL can override this in another environment.
-// For the public production site, the official custom domain is https://gachi.or.kr.
-const SITE = (import.meta.env.VITE_SITE_URL || 'https://gachi.or.kr').replace(/\/$/, '');
+// For the public production site, the official production domain is https://www.gachi.or.kr.
+const SITE = (import.meta.env.VITE_SITE_URL || 'https://www.gachi.or.kr').replace(/\/$/, '');
 const SITE_NAME = '사회적협동조합 가치함께';
 
 const pageMeta: Record<string, { title: string; description: string }> = {
