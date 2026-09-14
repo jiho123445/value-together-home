@@ -22,7 +22,11 @@ dotenv.config({ path: '.env.local' });
 
 const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || '';
 const DATABASE_ID = process.env.VITE_FIREBASE_DATABASE_ID || '(default)';
-const SITE_ORIGIN = (process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://value-together-home-gray.vercel.app').replace(/\/$/, '');
+// Production canonical origin is intentionally fixed here so a stale Vercel
+// environment variable can never leak the old *.vercel.app host into sitemap.xml
+// or static preview canonical/OG URLs. If a staging build is needed, clone this
+// script/config rather than overriding the production sitemap origin.
+const SITE_ORIGIN = 'https://gachi.or.kr';
 const SITE_NAME = '사회적협동조합 가치함께';
 const DIST_DIR = path.join(process.cwd(), 'dist');
 
@@ -140,8 +144,7 @@ async function main() {
   }
 
   if (!PROJECT_ID) {
-    console.warn('[generate-previews] VITE_FIREBASE_PROJECT_ID가 설정되지 않아 항목별 미리보기/사이트맵 생성을 건너뜁니다. (상위 경로 정적 파일은 정상 생성됨)');
-    return;
+    console.warn('[generate-previews] VITE_FIREBASE_PROJECT_ID가 설정되지 않아 동적 항목 미리보기는 건너뜁니다. 정적 사이트맵은 계속 생성합니다.');
   }
 
   const newsDir = path.join(DIST_DIR, 'news');
@@ -151,18 +154,19 @@ async function main() {
   let notices = [];
   let programs = [];
   let gallery = [];
-  try {
-    const [noticesDoc, programsDoc, galleryDoc] = await Promise.all([
-      fetchContentDoc('notices'),
-      fetchContentDoc('programs'),
-      fetchContentDoc('gallery'),
-    ]);
-    notices = noticesDoc?.items ?? [];
-    programs = programsDoc?.items ?? [];
-    gallery = galleryDoc?.items ?? [];
-  } catch (e) {
-    console.warn('[generate-previews] Firestore 조회 실패, 항목별 미리보기 생성을 건너뜁니다:', e.message);
-    return;
+  if (PROJECT_ID) {
+    try {
+      const [noticesDoc, programsDoc, galleryDoc] = await Promise.all([
+        fetchContentDoc('notices'),
+        fetchContentDoc('programs'),
+        fetchContentDoc('gallery'),
+      ]);
+      notices = noticesDoc?.items ?? [];
+      programs = programsDoc?.items ?? [];
+      gallery = galleryDoc?.items ?? [];
+    } catch (e) {
+      console.warn('[generate-previews] Firestore 조회 실패, 정적 경로만 포함한 사이트맵을 생성합니다:', e.message);
+    }
   }
 
   let count = 0;
@@ -224,12 +228,16 @@ async function main() {
     ...programs.filter((p) => p?.id).map((p) => ({ loc: `${SITE_ORIGIN}/business/${encodeURIComponent(p.id)}`, changefreq: 'monthly', priority: '0.6' })),
     ...gallery.filter((g) => g?.id).map((g) => ({ loc: `${SITE_ORIGIN}/gallery/${encodeURIComponent(g.id)}`, changefreq: 'monthly', priority: '0.5' })),
   ];
+  const invalidSitemapUrls = sitemapUrls.filter((u) => !u.loc.startsWith(`${SITE_ORIGIN}/`));
+  if (invalidSitemapUrls.length) {
+    throw new Error(`Invalid sitemap origin detected: ${invalidSitemapUrls[0].loc}`);
+  }
   const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls
     .map((u) => `  <url>\n    <loc>${escapeHtml(u.loc)}</loc>\n    <lastmod>${todayIso}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`)
     .join('\n')}\n</urlset>\n`;
   fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemapXml, 'utf-8');
 
-  console.log(`[generate-previews] Generated ${count} static preview pages, sitemap.xml with ${sitemapUrls.length} URLs.`);
+  console.log(`[generate-previews] Generated ${count} static preview pages, sitemap.xml with ${sitemapUrls.length} URLs for ${SITE_ORIGIN}.`);
 }
 
 main().catch((e) => {
