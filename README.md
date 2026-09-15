@@ -112,16 +112,20 @@ gachihamkke/
 
 ## 4-1. App Check 설정 방법 (선택, 권장)
 
-로그인 없이 누구나 쓸 수 있는 공개 폼(문의하기, 참여·후원 신청)과 페이지뷰 카운터(`visits` 컬렉션)는 구조상 봇/자동화 스크립트의 대량 요청에 노출되어 있습니다. `firestore.rules`의 필드 검증과 코드 상의 레이트리밋(`src/utils/spamGuard.ts`)이 1차 방어선이지만, "이 요청이 실제로 우리 웹사이트에서 브라우저로 보낸 것인지"까지는 확인해 주지 못합니다. **Firebase App Check**가 그 역할을 하는 서비스이며, 코드에는 이미 연동 로직이 준비되어 있습니다(`src/lib/firebase.ts`) — 아래 Firebase Console 설정만 완료하면 됩니다.
+로그인 없이 누구나 쓸 수 있는 공개 폼(문의하기, 참여·후원 신청)과 페이지뷰 카운터(`visits` 컬렉션)는 구조상 봇/자동화 스크립트의 대량 요청에 노출되어 있습니다. `firestore.rules`의 필드 검증과 코드 상의 레이트리밋(`src/utils/spamGuard.ts`)이 1차 방어선이지만, "이 요청이 실제로 우리 웹사이트에서 브라우저로 보낸 것인지"까지는 확인해 주지 못합니다. **Firebase App Check**가 그 역할을 하는 서비스이며, 코드에는 이미 연동 로직이 준비되어 있습니다(`src/lib/firebase.ts`) — 아래 설정만 완료하면 됩니다.
 
-1. [Firebase Console](https://console.firebase.google.com/) > 프로젝트 선택 > 왼쪽 메뉴 **App Check**로 이동합니다.
-2. "앱 등록"에서 이 프로젝트의 웹 앱을 선택하고, 공급자로 **reCAPTCHA v3**를 선택합니다. Firebase가 자동으로 reCAPTCHA v3 사이트 키를 발급해 주거나, 이미 가진 키를 연결할 수 있습니다.
-3. 발급된 **사이트 키**를 복사해서 `.env.local`(로컬)과 Vercel Environment Variables(배포)의 `VITE_RECAPTCHA_V3_SITE_KEY`에 붙여넣고, 다시 배포합니다.
-4. 로컬 개발 시에는 reCAPTCHA v3가 `localhost`를 인증할 수 없으므로, 대신 "디버그 토큰"을 씁니다. `npm run dev`로 로컬 사이트를 열면 브라우저 콘솔에 임의의 디버그 토큰이 한 번 출력됩니다 — 이 값을 App Check > 앱 선택 > **"디버그 토큰 관리"**에 한 번 등록해 두면, 이후로는 로컬 개발이 계속 정상 동작합니다.
-5. 배포 후 며칠간은 강제 적용(Enforce)하지 말고 **"모니터링(Unenforced)"** 상태로 두세요. App Check > Firestore / App Check > Storage 각각의 "지표(Metrics)" 탭에서 실제 방문자 요청 대부분이 "확인됨(Verified)"으로 표시되는지 확인한 뒤에 "적용(Enforce)"으로 전환해야, 실제 방문자가 실수로 차단되는 사고를 피할 수 있습니다.
-6. 확인이 끝나면 App Check > Firestore, App Check > Storage 각각에서 **"적용(Enforce)"**으로 전환합니다. 이 순간부터 App Check 토큰이 없는 요청(스크립트로 직접 Firestore API를 호출하는 등)은 서버 단에서 거부됩니다.
+App Check는 증명 제공업체로 **reCAPTCHA Enterprise**를 사용합니다. (예전에는 reCAPTCHA v3를 썼지만, Firebase Console에서 신규 앱 등록 시 reCAPTCHA v3를 지원 중단으로 표시하고 reCAPTCHA Enterprise 사용을 권장하고 있어 이쪽으로 전환했습니다.)
 
-`VITE_RECAPTCHA_V3_SITE_KEY`를 설정하지 않으면 App Check는 그냥 비활성화된 채로 남아 있고 사이트는 지금처럼 정상 동작합니다 — 급하지 않다면 나중에 언제든 추가해도 됩니다.
+1. [Google Cloud Console의 Fraud Defense(reCAPTCHA)](https://console.cloud.google.com/security/recaptcha) 페이지에서 프로젝트가 `value-together-home`인지 확인한 뒤 **"키 만들기"**를 클릭합니다.
+2. 애플리케이션 유형은 **웹**을 선택하고, 도메인 목록에 실제 배포 도메인(예: `www.gachi.or.kr`, 필요하면 `gachi.or.kr`)과 Vercel 기본 도메인(`*.vercel.app`)을 추가합니다.
+3. 점수 기반(체크박스 없이 동작) 키로 만들고 **Create key**를 클릭하면 사이트 키(Site key)가 발급됩니다. 이 값을 복사합니다.
+4. [Firebase Console](https://console.firebase.google.com/) > 프로젝트 선택 > 왼쪽 메뉴 **App Check** > "앱" 탭으로 이동해 이 프로젝트의 웹 앱을 등록하고, 공급자로 **reCAPTCHA Enterprise**를 선택한 뒤 3번에서 복사한 사이트 키를 붙여넣고 저장합니다.
+5. 같은 사이트 키를 `.env.local`(로컬)과 Vercel Environment Variables(배포)의 `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`에 붙여넣고, 다시 배포합니다.
+6. 로컬 개발 시에는 reCAPTCHA Enterprise가 `localhost`를 인증할 수 없으므로, 대신 "디버그 토큰"을 씁니다. `npm run dev`로 로컬 사이트를 열면 브라우저 콘솔에 임의의 디버그 토큰이 한 번 출력됩니다 — 이 값을 App Check > 앱 선택 > **"디버그 토큰 관리"**에 한 번 등록해 두면, 이후로는 로컬 개발이 계속 정상 동작합니다.
+7. 배포 후 며칠간은 강제 적용(Enforce)하지 말고 **"모니터링(Unenforced)"** 상태로 두세요. App Check > Firestore / App Check > Storage 각각의 "지표(Metrics)" 탭에서 실제 방문자 요청 대부분이 "확인됨(Verified)"으로 표시되는지 확인한 뒤에 "적용(Enforce)"으로 전환해야, 실제 방문자가 실수로 차단되는 사고를 피할 수 있습니다.
+8. 확인이 끝나면 App Check > Firestore, App Check > Storage 각각에서 **"적용(Enforce)"**으로 전환합니다. 이 순간부터 App Check 토큰이 없는 요청(스크립트로 직접 Firestore API를 호출하는 등)은 서버 단에서 거부됩니다.
+
+`VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`를 설정하지 않으면 App Check는 그냥 비활성화된 채로 남아 있고 사이트는 지금처럼 정상 동작합니다 — 급하지 않다면 나중에 언제든 추가해도 됩니다.
 
 ## 5. 관리자 계정 설정
 
