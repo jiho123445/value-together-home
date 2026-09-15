@@ -64,6 +64,19 @@
       href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
     />
 
+    <!--
+      Firestore/Storage preconnect: without this, the browser only starts
+      DNS+TLS setup for these domains once the JS bundle has loaded and run
+      far enough to call Firestore — which is exactly the round trip the
+      대문(Hero) image URL comes from (it lives in Firestore's
+      content/settings document, not in the page source). Preconnecting
+      here lets that handshake happen in parallel with the JS bundle
+      download instead of after it, shaving one full round trip off the
+      time before the Hero image can even start downloading.
+    -->
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin />
+
     <style>
       body {
         font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
